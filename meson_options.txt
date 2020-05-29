@@ -1,0 +1,9 @@
+# Per-platform confifuration
+option('default-netiface', type: 'string',
+       value: 'eth0',
+       description: 'The default network interface used for manipulating DNS/NTP servers list.')
+
+# Unit tests support
+option('tests',
+       type: 'feature',
+       description: 'Build tests')

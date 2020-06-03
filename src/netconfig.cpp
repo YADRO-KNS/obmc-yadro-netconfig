@@ -216,7 +216,6 @@ static void cmdDhcpcfg(Dbus& bus, Arguments& args)
     const char* featureDns = "dns";
     const char* featureNtp = "ntp";
 
-    const std::string object = pathFromOptional(args);
     const Toggle toggle = args.asToggle();
     const char* feature = args.asOneOf({featureDns, featureNtp});
     args.expectEnd();
@@ -226,13 +225,13 @@ static void cmdDhcpcfg(Dbus& bus, Arguments& args)
     if (strcmp(feature, featureDns) == 0)
     {
         printf("%s DNS over DHCP...\n", enable ? "Enable" : "Disable");
-        bus.set(object.c_str(), Dbus::dhcpInterface, Dbus::dhcpDnsEnabled,
+        bus.set(Dbus::objectDhcp, Dbus::dhcpInterface, Dbus::dhcpDnsEnabled,
                 enable);
     }
     else
     {
         printf("%s NTP over DHCP...\n", enable ? "Enable" : "Disable");
-        bus.set(object.c_str(), Dbus::dhcpInterface, Dbus::dhcpNtpEnabled,
+        bus.set(Dbus::objectDhcp, Dbus::dhcpInterface, Dbus::dhcpNtpEnabled,
                 enable);
     }
 

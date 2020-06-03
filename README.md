@@ -14,4 +14,14 @@ $ meson build_dir
 $ ninja -C build_dir
 ```
 If build process succeeded, the directory `build_dir` contains executable
-file `networkcfg`.
+file `netconfig`.
+
+## Testing
+Unit tests can be built and run with OpenBMC SDK.
+
+Run tests:
+```sh
+$ source /path/to/sdk/environment-setup-arm1176jzs-openbmc-linux-gnueabi
+$ # build the project (see above)
+$ qemu-arm -L ${SDKTARGETSYSROOT} build_dir/test/netconfig_test
+```

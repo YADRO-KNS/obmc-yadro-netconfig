@@ -65,8 +65,6 @@ void Show::print()
 
 void Show::printInterface(const char* obj)
 {
-    // General configuration
-
     const auto genCfg = netObjects.find(sdbusplus::message::object_path(obj));
     if (genCfg != netObjects.end())
     {

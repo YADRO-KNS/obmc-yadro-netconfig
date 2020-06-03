@@ -145,10 +145,10 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
             if (ver.has_value())
             {
                 constexpr size_t ip4MaxMask = 32;
-                constexpr size_t ip6MaxMask = 128;
+                constexpr size_t ip6MaxMask = 64;
                 const size_t mask = strtoul(maskText, nullptr, 0);
-                if (mask && ((ver == IpVer::v4 && mask < ip4MaxMask) ||
-                             (ver == IpVer::v6 && mask < ip6MaxMask)))
+                if (mask && ((ver == IpVer::v4 && mask <= ip4MaxMask) ||
+                             (ver == IpVer::v6 && mask <= ip6MaxMask)))
                 {
                     return std::make_tuple(ver.value(), addr, mask);
                 }

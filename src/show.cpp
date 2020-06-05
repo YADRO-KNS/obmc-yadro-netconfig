@@ -95,7 +95,6 @@ void Show::printInterface(const char* obj)
         {
             const Dbus::Properties& properties = cfgEth->second;
             printProperty("DHCP", Dbus::ethDhcpEnabled, properties);
-            printProperty("Domains", Dbus::ethDomainName, properties);
             printProperty("DNS servers", Dbus::ethNameServers, properties);
             printProperty("Static DNS servers", Dbus::ethStNameServers,
                           properties);

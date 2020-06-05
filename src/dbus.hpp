@@ -49,7 +49,6 @@ class Dbus
     static constexpr const char* ethInterface =
         "xyz.openbmc_project.Network.EthernetInterface";
     static constexpr const char* ethDhcpEnabled = "DHCPEnabled";
-    static constexpr const char* ethDomainName = "DomainName";
     static constexpr const char* ethNtpServers = "NTPServers";
     static constexpr const char* ethNameServers = "Nameservers";
     static constexpr const char* ethStNameServers = "StaticNameServers";

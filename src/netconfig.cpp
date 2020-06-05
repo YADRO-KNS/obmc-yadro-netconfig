@@ -102,31 +102,6 @@ static void cmdHostname(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove BMC dimain: `domain [VLANID] {add|del} NAME` */
-static void cmdDomain(Dbus& bus, Arguments& args)
-{
-    const std::string object = pathFromOptional(args);
-    const Action action = args.asAction();
-    const char* domain = args.asText();
-    args.expectEnd();
-
-    printf("%s domain name %s...\n",
-           action == Action::add ? "Adding" : "Removing", domain);
-
-    if (action == Action::add)
-    {
-        bus.append(object.c_str(), Dbus::ethInterface, Dbus::ethDomainName,
-                   domain);
-    }
-    else
-    {
-        bus.remove(object.c_str(), Dbus::ethInterface, Dbus::ethDomainName,
-                   domain);
-    }
-
-    puts(completeMessage);
-}
-
 /** @brief Set default gateway: `getway IP` */
 static void cmdGateway(Dbus& bus, Arguments& args)
 {
@@ -331,7 +306,6 @@ static const Command commands[] = {
     {"reset", nullptr, "Reset configuration to factory defaults", cmdReset},
     {"mac", "MAC", "Set MAC address", cmdMac},
     {"hostname", "NAME", "Set host name", cmdHostname},
-    {"domain", "[VLANID] {add|del} NAME", "Add or remove domain name", cmdDomain},
     {"gateway", "IP", "Set default gateway", cmdGateway},
     {"ip", "[VLANID] {add|del} IP[/MASK GATEWAY]", "Add or remove static IP address", cmdIp},
     {"dhcp", "[VLANID] {enable|disable}", "Enable or disable DHCP client", cmdDhcp},

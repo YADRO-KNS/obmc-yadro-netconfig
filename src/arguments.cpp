@@ -76,10 +76,10 @@ const char*
     return arg;
 }
 
-size_t Arguments::asDigit()
+size_t Arguments::asNumber()
 {
     const char* arg = asText();
-    if (!isDigit(arg))
+    if (!isNumber(arg))
     {
         std::string err = "Invalid numeric argument: ";
         err += arg;
@@ -138,7 +138,7 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
     if (delim)
     {
         const char* maskText = delim + 1;
-        if (isDigit(maskText))
+        if (isNumber(maskText))
         {
             const std::string addr(arg, delim);
             const std::optional<IpVer> ver = isIpAddress(addr.c_str());
@@ -161,7 +161,7 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
     throw std::invalid_argument(err);
 }
 
-bool Arguments::isDigit(const char* arg)
+bool Arguments::isNumber(const char* arg)
 {
     const size_t len = arg ? strlen(arg) : 0;
     if (!len || len > maxNumericLen)

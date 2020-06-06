@@ -106,7 +106,7 @@ class Arguments
      *
      * @return argument value as unsigned number
      */
-    size_t asDigit();
+    size_t asNumber();
 
     /**
      * @brief Get current argument as action.
@@ -164,13 +164,13 @@ class Arguments
     std::tuple<IpVer, std::string, uint8_t> asIpAddrMask();
 
     /**
-     * @brief Check for numeric format.
+     * @brief Check for unsigned numeric format.
      *
      * @param[in] arg value to check
      *
      * @return false if checked value is not a number
      */
-    static bool isDigit(const char* arg);
+    static bool isNumber(const char* arg);
 
     /**
      * @brief Check for IP address.

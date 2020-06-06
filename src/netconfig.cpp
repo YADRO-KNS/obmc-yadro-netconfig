@@ -49,9 +49,9 @@ static std::string pathFromOptional(Arguments& args)
     std::string objectPath;
 
     const char* nextArg = args.peek();
-    if (nextArg && Arguments::isDigit(nextArg))
+    if (nextArg && Arguments::isNumber(nextArg))
     {
-        const size_t vlanId = args.asDigit();
+        const size_t vlanId = args.asNumber();
         objectPath = Dbus::vlanObject(static_cast<uint32_t>(vlanId));
     }
     else
@@ -279,7 +279,7 @@ static void cmdNtp(Dbus& bus, Arguments& args)
 static void cmdVlan(Dbus& bus, Arguments& args)
 {
     const Action action = args.asAction();
-    const uint32_t id = static_cast<uint32_t>(args.asDigit());
+    const uint32_t id = static_cast<uint32_t>(args.asNumber());
     args.expectEnd();
 
     printf("%s VLAN with ID %u...\n",

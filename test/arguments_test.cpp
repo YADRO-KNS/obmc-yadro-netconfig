@@ -38,13 +38,13 @@ TEST(ArgumentsTest, Numeric)
 
     Arguments args(argsNum, testArgs);
 
-    EXPECT_EQ(args.asDigit(), 0);
-    EXPECT_EQ(args.asDigit(), 100);
-    ASSERT_THROW(args.asDigit(), std::invalid_argument);
-    ASSERT_THROW(args.asDigit(), std::invalid_argument);
-    ASSERT_THROW(args.asDigit(), std::invalid_argument);
-    ASSERT_THROW(args.asDigit(), std::invalid_argument);
-    ASSERT_THROW(args.asDigit(), std::invalid_argument);
+    EXPECT_EQ(args.asNumber(), 0);
+    EXPECT_EQ(args.asNumber(), 100);
+    ASSERT_THROW(args.asNumber(), std::invalid_argument);
+    ASSERT_THROW(args.asNumber(), std::invalid_argument);
+    ASSERT_THROW(args.asNumber(), std::invalid_argument);
+    ASSERT_THROW(args.asNumber(), std::invalid_argument);
+    ASSERT_THROW(args.asNumber(), std::invalid_argument);
 }
 
 TEST(ArgumentsTest, Action)

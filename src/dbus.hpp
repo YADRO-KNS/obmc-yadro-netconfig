@@ -12,9 +12,6 @@
 class Dbus
 {
   public:
-    // Main network interface
-    static constexpr const char* eth0 = "eth0";
-
     // Network service name
     static constexpr const char* networkService = "xyz.openbmc_project.Network";
 
@@ -24,8 +21,6 @@ class Dbus
         "/xyz/openbmc_project/network/config";
     static constexpr const char* objectDhcp =
         "/xyz/openbmc_project/network/config/dhcp";
-    static constexpr const char* objectEth0 =
-        "/xyz/openbmc_project/network/eth0";
 
     // System Configuration interface, its methods and properties
     static constexpr const char* syscfgInterface =
@@ -48,6 +43,7 @@ class Dbus
     // Ethernet interface, its methods and properties
     static constexpr const char* ethInterface =
         "xyz.openbmc_project.Network.EthernetInterface";
+    static constexpr const char* ethName = "InterfaceName";
     static constexpr const char* ethDhcpEnabled = "DHCPEnabled";
     static constexpr const char* ethNtpServers = "NTPServers";
     static constexpr const char* ethNameServers = "Nameservers";
@@ -219,13 +215,13 @@ class Dbus
     std::vector<IpAddress> getAddresses(const char* ethObject);
 
     /**
-     * @brief Construct path to VLAN object.
+     * @brief Convert network interface name to its D-Bus object path.
      *
-     * @param[in] id VLAN Id
+     * @param[in] name network interface name
      *
      * @return path to D-Bus object
      */
-    static std::string vlanObject(uint32_t id);
+    static std::string ethToPath(const char* name);
 
   private:
     /** @brief D-Bus connection. */

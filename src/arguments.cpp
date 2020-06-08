@@ -4,7 +4,9 @@
 #include "arguments.hpp"
 
 #include <arpa/inet.h>
+#include <ifaddrs.h>
 #include <netinet/ether.h>
+#include <sys/types.h>
 
 #include <algorithm>
 #include <cstring>
@@ -102,6 +104,31 @@ Toggle Arguments::asToggle()
     const char* disable = "disable";
     const char* arg = asOneOf({enable, disable});
     return strcmp(arg, enable) == 0 ? Toggle::enable : Toggle::disable;
+}
+
+const char* Arguments::asNetInterface()
+{
+    const char* arg = asText();
+
+    bool found = true;
+    ifaddrs* ifaddr;
+    if (getifaddrs(&ifaddr) == 0)
+    {
+        found = false;
+        for (ifaddrs* ifa = ifaddr; ifa && !found; ifa = ifa->ifa_next)
+        {
+            found = strcmp(arg, ifa->ifa_name) == 0;
+        }
+        freeifaddrs(ifaddr);
+    }
+    if (!found)
+    {
+        std::string err = "Invalid network interface name: ";
+        err += arg;
+        throw std::invalid_argument(err);
+    }
+
+    return arg;
 }
 
 const char* Arguments::asMacAddress()

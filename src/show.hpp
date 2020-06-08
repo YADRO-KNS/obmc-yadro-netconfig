@@ -50,6 +50,19 @@ class Show
      */
     void printProperty(const char* name, const char* value) const;
 
+    /**
+     * @brief Get properties defined by interface for specified object.
+     *        If object or interface were not found - returns empty set,
+     *        this case will handled by printPropert() as 'N/A' values.
+     *
+     * @param[in] obj path to D-Bus network object
+     * @param[in] iface interface name
+     *
+     * @return properties
+     */
+    const Dbus::Properties& getProperties(const char* obj,
+                                          const char* iface) const;
+
   private:
     /** @brief D-Bus connection. */
     Dbus& bus;

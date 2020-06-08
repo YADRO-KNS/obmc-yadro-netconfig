@@ -131,6 +131,17 @@ class Arguments
     Toggle asToggle();
 
     /**
+     * @brief Get current argument as network interface name.
+     *        Argument pointer will be moved to the next entry.
+     *
+     * @throw std::invalid_argument if there are no more arguments to handle
+     *                              or argument is not a valid interface name
+     *
+     * @return argument value: network interface name
+     */
+    const char* asNetInterface();
+
+    /**
      * @brief Get current argument as MAC address.
      *        Argument pointer will be moved to the next entry.
      *

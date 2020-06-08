@@ -73,7 +73,9 @@ std::vector<Dbus::IpAddress> Dbus::getAddresses(const char* ethObject)
     return addresses;
 }
 
-std::string Dbus::vlanObject(uint32_t id)
+std::string Dbus::ethToPath(const char* name)
 {
-    return std::string(objectEth0) + '_' + std::to_string(id);
+    std::string dbusName = name;
+    std::replace(dbusName.begin(), dbusName.end(), '.', '_');
+    return std::string(objectRoot) + '/' + dbusName;
 }

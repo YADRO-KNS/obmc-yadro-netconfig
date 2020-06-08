@@ -37,31 +37,6 @@ struct Command
 /** @brief Standard message to print after sending request. */
 static const char* completeMessage = "Request has been sent";
 
-/**
- * @brief Construct object path for network interface from optional argument.
- *
- * @param[in] args command arguments
- *
- * @return path to D-Bus object: eth0 or VLAN's
- */
-static std::string pathFromOptional(Arguments& args)
-{
-    std::string objectPath;
-
-    const char* nextArg = args.peek();
-    if (nextArg && Arguments::isNumber(nextArg))
-    {
-        const size_t vlanId = args.asNumber();
-        objectPath = Dbus::vlanObject(static_cast<uint32_t>(vlanId));
-    }
-    else
-    {
-        objectPath = Dbus::objectEth0;
-    }
-
-    return objectPath;
-}
-
 /** @brief Show network configuration: `show` */
 static void cmdShow(Dbus& bus, Arguments& args)
 {
@@ -79,14 +54,17 @@ static void cmdReset(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Set MAC address for main network interface (eth0): `mac MAC` */
+/** @brief Set MAC address: `mac {INTERFACE} MAC` */
 static void cmdMac(Dbus& bus, Arguments& args)
 {
+    const char* iface = args.asNetInterface();
     const char* mac = args.asMacAddress();
     args.expectEnd();
 
+    const std::string object = Dbus::ethToPath(iface);
+
     printf("Set new MAC address %s...\n", mac);
-    bus.set(Dbus::objectEth0, Dbus::macInterface, Dbus::macSet, mac);
+    bus.set(object.c_str(), Dbus::macInterface, Dbus::macSet, mac);
     puts(completeMessage);
 }
 
@@ -119,11 +97,13 @@ static void cmdGateway(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove IP: `ip [VLANID] {add|del} IP[/MASK GATEWAY]` */
+/** @brief Add/remove IP: `ip {INTERFACE} {add|del} IP[/MASK GATEWAY]` */
 static void cmdIp(Dbus& bus, Arguments& args)
 {
-    const std::string object = pathFromOptional(args);
+    const char* iface = args.asNetInterface();
     const Action action = args.asAction();
+
+    const std::string object = Dbus::ethToPath(iface);
 
     if (action == Action::add)
     {
@@ -170,14 +150,16 @@ static void cmdIp(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Enable/disable DHCP client: 'dhcp [VLANID] {enable|disable}` */
+/** @brief Enable/disable DHCP client: 'dhcp {INTERFACE} {enable|disable}` */
 static void cmdDhcp(Dbus& bus, Arguments& args)
 {
-    const std::string object = pathFromOptional(args);
+    const char* iface = args.asNetInterface();
     const Toggle toggle = args.asToggle();
     args.expectEnd();
 
+    const std::string object = Dbus::ethToPath(iface);
     const bool enable = toggle == Toggle::enable;
+
     printf("%s DHCP client...\n", enable ? "Enable" : "Disable");
 
     bus.set(object.c_str(), Dbus::ethInterface, Dbus::ethDhcpEnabled, enable);
@@ -213,10 +195,10 @@ static void cmdDhcpcfg(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove DNS server: `dns [VLANID] {add|del} [static] IP` */
+/** @brief Add/remove DNS server: `dns {INTERFACE} {add|del} [static] IP` */
 static void cmdDns(Dbus& bus, Arguments& args)
 {
-    const std::string object = pathFromOptional(args);
+    const char* iface = args.asNetInterface();
     const Action action = args.asAction();
 
     const char* nextArg = args.peek();
@@ -235,6 +217,8 @@ static void cmdDns(Dbus& bus, Arguments& args)
     const auto [_, srv] = args.asIpAddress();
     args.expectEnd();
 
+    const std::string object = Dbus::ethToPath(iface);
+
     printf("%s DNS server %s...\n",
            action == Action::add ? "Adding" : "Removing", srv);
 
@@ -250,13 +234,15 @@ static void cmdDns(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove NTP server: `ntp [VLANID] {add|del} IP` */
+/** @brief Add/remove NTP server: `ntp {INTERFACE} {add|del} IP` */
 static void cmdNtp(Dbus& bus, Arguments& args)
 {
-    const std::string object = pathFromOptional(args);
+    const char* iface = args.asNetInterface();
     const Action action = args.asAction();
     const char* srv = args.asText();
     args.expectEnd();
+
+    const std::string object = Dbus::ethToPath(iface);
 
     printf("%s NTP server %s...\n",
            action == Action::add ? "Adding" : "Removing", srv);
@@ -275,10 +261,11 @@ static void cmdNtp(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove VLAN: `vlan {add|del} ID` */
+/** @brief Add/remove VLAN: `vlan {add|del} {INTERFACE} ID` */
 static void cmdVlan(Dbus& bus, Arguments& args)
 {
     const Action action = args.asAction();
+    const char* iface = args.asNetInterface();
     const uint32_t id = static_cast<uint32_t>(args.asNumber());
     args.expectEnd();
 
@@ -288,11 +275,12 @@ static void cmdVlan(Dbus& bus, Arguments& args)
     if (action == Action::add)
     {
         bus.call(Dbus::objectRoot, Dbus::vlanCreateInterface,
-                 Dbus::vlanCreateMethod, Dbus::eth0, id);
+                 Dbus::vlanCreateMethod, iface, id);
     }
     else
     {
-        const std::string object = bus.vlanObject(id);
+        const std::string object =
+            Dbus::ethToPath(iface) + '_' + std::to_string(id);
         bus.call(object.c_str(), Dbus::deleteInterface, Dbus::deleteMethod);
     }
 
@@ -304,15 +292,15 @@ static void cmdVlan(Dbus& bus, Arguments& args)
 static const Command commands[] = {
     {"show", nullptr, "Show current configuration", cmdShow},
     {"reset", nullptr, "Reset configuration to factory defaults", cmdReset},
-    {"mac", "MAC", "Set MAC address", cmdMac},
+    {"mac", "{INTERFACE} MAC", "Set MAC address", cmdMac},
     {"hostname", "NAME", "Set host name", cmdHostname},
     {"gateway", "IP", "Set default gateway", cmdGateway},
-    {"ip", "[VLANID] {add|del} IP[/MASK GATEWAY]", "Add or remove static IP address", cmdIp},
-    {"dhcp", "[VLANID] {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
+    {"ip", "{INTERFACE} {add|del} IP[/MASK GATEWAY]", "Add or remove static IP address", cmdIp},
+    {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
-    {"dns", "[VLANID] {add|del} [static] IP", "Add or remove DNS server", cmdDns},
-    {"ntp", "[VLANID] {add|del} IP", "Add or remove NTP server", cmdNtp},
-    {"vlan", "{add|del} ID", "Add or remove VLAN", cmdVlan},
+    {"dns", "{INTERFACE} {add|del} [static] IP", "Add or remove DNS server", cmdDns},
+    {"ntp", "{INTERFACE} {add|del} IP", "Add or remove NTP server", cmdNtp},
+    {"vlan", "{add|del} {INTERFACE} ID", "Add or remove VLAN", cmdVlan},
 };
 // clang-format on
 

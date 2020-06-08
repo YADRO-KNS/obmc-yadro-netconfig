@@ -13,51 +13,23 @@ void Show::print()
 {
     // Global config
     const auto globalCfg =
-        netObjects.find(sdbusplus::message::object_path(Dbus::objectConfig));
-    if (globalCfg != netObjects.end())
-    {
-        const auto cfg = globalCfg->second.find(Dbus::syscfgInterface);
-        if (cfg != globalCfg->second.end())
-        {
-            const Dbus::Properties& properties = cfg->second;
-            puts("Global network configuration:");
-            printProperty("Host name", Dbus::syscfgHostname, properties);
-            printProperty("Default IPv4 gateway", Dbus::syscfgDefGw4,
-                          properties);
-            printProperty("Default IPv6 gateway", Dbus::syscfgDefGw6,
-                          properties);
-        }
-    }
+        getProperties(Dbus::objectConfig, Dbus::syscfgInterface);
+    puts("Global network configuration:");
+    printProperty("Host name", Dbus::syscfgHostname, globalCfg);
+    printProperty("Default IPv4 gateway", Dbus::syscfgDefGw4, globalCfg);
+    printProperty("Default IPv6 gateway", Dbus::syscfgDefGw6, globalCfg);
 
     // DHCP config
-    const auto dhcpCfg =
-        netObjects.find(sdbusplus::message::object_path(Dbus::objectDhcp));
-    if (dhcpCfg != netObjects.end())
-    {
-        const auto cfg = dhcpCfg->second.find(Dbus::dhcpInterface);
-        if (cfg != dhcpCfg->second.end())
-        {
-            const Dbus::Properties& properties = cfg->second;
-            puts("Global DHCP configuration:");
-            printProperty("DNS over DHCP", Dbus::dhcpDnsEnabled, properties);
-            printProperty("NTP over DHCP", Dbus::dhcpNtpEnabled, properties);
-        }
-    }
+    const auto dhcpCfg = getProperties(Dbus::objectDhcp, Dbus::dhcpInterface);
+    puts("Global DHCP configuration:");
+    printProperty("DNS over DHCP", Dbus::dhcpDnsEnabled, dhcpCfg);
+    printProperty("NTP over DHCP", Dbus::dhcpNtpEnabled, dhcpCfg);
 
-    // eth0 config
-    puts("General Ethernet interface configuration:");
-    printInterface(Dbus::objectEth0);
-
-    // VLAN config
+    // Network interfaces
     for (const auto& it : netObjects)
     {
-        const auto vlan = it.second.find(Dbus::vlanInterface);
-        if (vlan != it.second.end())
+        if (it.second.find(Dbus::ethInterface) != it.second.end())
         {
-            const Dbus::Properties& properties = vlan->second;
-            const uint32_t id =
-                std::get<uint32_t>(properties.find(Dbus::vlanId)->second);
-            printf("VLAN %u configuration:\n", id);
             printInterface(static_cast<std::string>(it.first).c_str());
         }
     }
@@ -65,42 +37,36 @@ void Show::print()
 
 void Show::printInterface(const char* obj)
 {
-    const auto genCfg = netObjects.find(sdbusplus::message::object_path(obj));
-    if (genCfg != netObjects.end())
+    const auto cfgEth = getProperties(obj, Dbus::ethInterface);
+    const auto cfgVlan = getProperties(obj, Dbus::vlanInterface);
+    const auto cfgMac = getProperties(obj, Dbus::macInterface);
+
+    const Dbus::PropertyValue& nameProp = cfgEth.find(Dbus::ethName)->second;
+    printf("Ethernet interface %s:\n", std::get<std::string>(nameProp).c_str());
+
+    if (!cfgVlan.empty())
     {
-        // IP addresses
-        for (const auto& it : bus.getAddresses(obj))
-        {
-            std::string val = it.address;
-            val += '/';
-            val += std::to_string(it.mask);
-            if (!it.gateway.empty())
-            {
-                val += ", gateway ";
-                val += it.gateway;
-            }
-            printProperty("IP address", val.c_str());
-        }
-
-        // MAC address
-        const auto cfgMac = genCfg->second.find(Dbus::macInterface);
-        if (cfgMac != genCfg->second.end())
-        {
-            printProperty("MAC address", Dbus::macSet, cfgMac->second);
-        }
-
-        // Common interface configuration
-        const auto cfgEth = genCfg->second.find(Dbus::ethInterface);
-        if (cfgEth != genCfg->second.end())
-        {
-            const Dbus::Properties& properties = cfgEth->second;
-            printProperty("DHCP", Dbus::ethDhcpEnabled, properties);
-            printProperty("DNS servers", Dbus::ethNameServers, properties);
-            printProperty("Static DNS servers", Dbus::ethStNameServers,
-                          properties);
-            printProperty("NTP servers", Dbus::ethNtpServers, properties);
-        }
+        printProperty("VLAN Id", Dbus::vlanId, cfgVlan);
     }
+    printProperty("MAC address", Dbus::macSet, cfgMac);
+
+    for (const auto& it : bus.getAddresses(obj))
+    {
+        std::string val = it.address;
+        val += '/';
+        val += std::to_string(it.mask);
+        if (!it.gateway.empty())
+        {
+            val += ", gateway ";
+            val += it.gateway;
+        }
+        printProperty("IP address", val.c_str());
+    }
+
+    printProperty("DHCP", Dbus::ethDhcpEnabled, cfgEth);
+    printProperty("DNS servers", Dbus::ethNameServers, cfgEth);
+    printProperty("Static DNS servers", Dbus::ethStNameServers, cfgEth);
+    printProperty("NTP servers", Dbus::ethNtpServers, cfgEth);
 }
 
 void Show::printProperty(const char* title, const char* name,
@@ -167,4 +133,21 @@ void Show::printProperty(const char* name, const char* value) const
     const int nameLen = static_cast<int>(strlen(name));
     printf("  %s: %*s%s\n", name, nameLen < nameWidth ? nameWidth - nameLen : 0,
            "", value);
+}
+
+const Dbus::Properties& Show::getProperties(const char* obj,
+                                            const char* iface) const
+{
+    const auto objPath = sdbusplus::message::object_path(obj);
+    const auto dbusObject = netObjects.find(objPath);
+    if (dbusObject != netObjects.end())
+    {
+        const auto props = dbusObject->second.find(iface);
+        if (props != dbusObject->second.end())
+        {
+            return props->second;
+        }
+    }
+    static Dbus::Properties empty;
+    return empty;
 }

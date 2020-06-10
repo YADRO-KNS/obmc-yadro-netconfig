@@ -110,11 +110,10 @@ const char* Arguments::asNetInterface()
 {
     const char* arg = asText();
 
-    bool found = true;
+    bool found = false;
     ifaddrs* ifaddr;
     if (getifaddrs(&ifaddr) == 0)
     {
-        found = false;
         for (ifaddrs* ifa = ifaddr; ifa && !found; ifa = ifa->ifa_next)
         {
             found = strcmp(arg, ifa->ifa_name) == 0;

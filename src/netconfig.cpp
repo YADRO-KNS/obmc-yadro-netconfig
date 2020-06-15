@@ -195,10 +195,9 @@ static void cmdDhcpcfg(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove DNS server: `dns {INTERFACE} {add|del} [static] IP` */
+/** @brief Add/remove DNS server: `dns {add|del} [static] IP` */
 static void cmdDns(Dbus& bus, Arguments& args)
 {
-    const char* iface = args.asNetInterface();
     const Action action = args.asAction();
 
     const char* nextArg = args.peek();
@@ -217,7 +216,7 @@ static void cmdDns(Dbus& bus, Arguments& args)
     const auto [_, srv] = args.asIpAddress();
     args.expectEnd();
 
-    const std::string object = Dbus::ethToPath(iface);
+    const std::string object = Dbus::ethToPath(Dbus::defaultEth);
 
     printf("%s DNS server %s...\n",
            action == Action::add ? "Adding" : "Removing", srv);
@@ -234,15 +233,14 @@ static void cmdDns(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove NTP server: `ntp {INTERFACE} {add|del} IP` */
+/** @brief Add/remove NTP server: `ntp {add|del} IP` */
 static void cmdNtp(Dbus& bus, Arguments& args)
 {
-    const char* iface = args.asNetInterface();
     const Action action = args.asAction();
     const char* srv = args.asText();
     args.expectEnd();
 
-    const std::string object = Dbus::ethToPath(iface);
+    const std::string object = Dbus::ethToPath(Dbus::defaultEth);
 
     printf("%s NTP server %s...\n",
            action == Action::add ? "Adding" : "Removing", srv);
@@ -298,8 +296,8 @@ static const Command commands[] = {
     {"ip", "{INTERFACE} {add|del} IP[/MASK GATEWAY]", "Add or remove static IP address", cmdIp},
     {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
-    {"dns", "{INTERFACE} {add|del} [static] IP", "Add or remove DNS server", cmdDns},
-    {"ntp", "{INTERFACE} {add|del} IP", "Add or remove NTP server", cmdNtp},
+    {"dns", "{add|del} [static] IP", "Add or remove DNS server", cmdDns},
+    {"ntp", "{add|del} IP", "Add or remove NTP server", cmdNtp},
     {"vlan", "{add|del} {INTERFACE} ID", "Add or remove VLAN", cmdVlan},
 };
 // clang-format on

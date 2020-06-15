@@ -12,6 +12,9 @@
 class Dbus
 {
   public:
+    // Default ethernet interface used to manipulate wth DNS/NTP servers
+    static constexpr const char* defaultEth = "eth0";
+
     // Network service name
     static constexpr const char* networkService = "xyz.openbmc_project.Network";
 

@@ -164,13 +164,13 @@ class Arguments
     std::tuple<IpVer, const char*> asIpAddress();
 
     /**
-     * @brief Get current argument as IP address with mask.
+     * @brief Get current argument as IP address with prefix length.
      *        Argument pointer will be moved to the next entry.
      *
      * @throw std::invalid_argument if there are no more arguments to handle
      *                              or argument has invalid format
      *
-     * @return argument value: IP version, address and mask as bits count
+     * @return argument value: IP version, address and prefix len as bits count
      */
     std::tuple<IpVer, std::string, uint8_t> asIpAddrMask();
 
@@ -193,8 +193,10 @@ class Arguments
     static std::optional<IpVer> isIpAddress(const char* arg);
 
   private:
-    /** @brief Index of the next argument. */
-    size_t index;
+    using Args = std::vector<char*>;
+
     /** @brief Array of arguments. */
-    std::vector<char*> args;
+    Args args;
+    /** @brief Current argument. */
+    Args::const_iterator current;
 };

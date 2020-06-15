@@ -16,32 +16,33 @@
 /** @brief Max length of a numeric value. */
 static constexpr size_t maxNumericLen = 10;
 
-Arguments::Arguments(int argc, char* argv[]) : index(0), args(argv, argv + argc)
+Arguments::Arguments(int argc, char* argv[]) :
+    args(argv, argv + argc), current(args.begin())
 {}
 
 Arguments& Arguments::operator++()
 {
-    if (index == args.size())
+    if (current == args.end())
     {
         throw std::invalid_argument("Not enough arguments");
     }
-    ++index;
+    ++current;
     return *this;
 }
 
 void Arguments::expectEnd() const
 {
-    if (peek())
+    if (current != args.end())
     {
         std::string err = "Unexpected arguments: ";
-        err += args.at(index);
+        err += *current;
         throw std::invalid_argument(err);
     }
 }
 
 const char* Arguments::peek() const
 {
-    return index < args.size() ? args.at(index) : nullptr;
+    return current == args.end() ? nullptr : *current;
 }
 
 const char* Arguments::asText()
@@ -170,20 +171,20 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
             const std::optional<IpVer> ver = isIpAddress(addr.c_str());
             if (ver.has_value())
             {
-                constexpr size_t ip4MaxMask = 32;
-                constexpr size_t ip6MaxMask = 64;
-                const size_t mask = strtoul(maskText, nullptr, 0);
-                if (mask && ((ver == IpVer::v4 && mask <= ip4MaxMask) ||
-                             (ver == IpVer::v6 && mask <= ip6MaxMask)))
+                constexpr size_t ip4MaxPrefix = 32;
+                constexpr size_t ip6MaxPrefix = 64;
+                const size_t prefix = strtoul(maskText, nullptr, 0);
+                if (prefix && ((ver == IpVer::v4 && prefix <= ip4MaxPrefix) ||
+                               (ver == IpVer::v6 && prefix <= ip6MaxPrefix)))
                 {
-                    return std::make_tuple(ver.value(), addr, mask);
+                    return std::make_tuple(ver.value(), addr, prefix);
                 }
             }
         }
     }
     std::string err = "Invalid argument: ";
     err += arg;
-    err += ", expected IP/MASK (e.g. 10.0.0.1/8)";
+    err += ", expected IP/PREFIX (e.g. 10.0.0.1/8)";
     throw std::invalid_argument(err);
 }
 

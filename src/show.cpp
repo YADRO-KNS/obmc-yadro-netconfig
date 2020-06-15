@@ -25,6 +25,14 @@ void Show::print()
     printProperty("DNS over DHCP", Dbus::dhcpDnsEnabled, dhcpCfg);
     printProperty("NTP over DHCP", Dbus::dhcpNtpEnabled, dhcpCfg);
 
+    // DNS and NTP servers are bound to the default interface
+    puts("DNS and NTP servers list:");
+    const std::string defEth = Dbus::ethToPath(Dbus::defaultEth);
+    const auto cfgDnsNtp = getProperties(defEth.c_str(), Dbus::ethInterface);
+    printProperty("DNS servers", Dbus::ethNameServers, cfgDnsNtp);
+    printProperty("Static DNS servers", Dbus::ethStNameServers, cfgDnsNtp);
+    printProperty("NTP servers", Dbus::ethNtpServers, cfgDnsNtp);
+
     // Network interfaces
     for (const auto& it : netObjects)
     {
@@ -64,9 +72,6 @@ void Show::printInterface(const char* obj)
     }
 
     printProperty("DHCP", Dbus::ethDhcpEnabled, cfgEth);
-    printProperty("DNS servers", Dbus::ethNameServers, cfgEth);
-    printProperty("Static DNS servers", Dbus::ethStNameServers, cfgEth);
-    printProperty("NTP servers", Dbus::ethNtpServers, cfgEth);
 }
 
 void Show::printProperty(const char* title, const char* name,

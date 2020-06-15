@@ -15,6 +15,10 @@ version = vcs_tag(command: [ 'git', 'describe', '--always', '--dirty', '--long' 
                   input: 'src/version.hpp.in',
                   output: 'version.hpp')
 
+conf = configuration_data()
+conf.set_quoted('DEFAULT_NETIFACE', get_option('default-netiface'))
+configure_file(output: 'config.hpp', configuration: conf)
+
 build_tests = get_option('tests')
 subdir('test')
 

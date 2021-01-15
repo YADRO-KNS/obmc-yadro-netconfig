@@ -195,24 +195,11 @@ static void cmdDhcpcfg(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove DNS server: `dns {INTERFACE} {add|del} [static] IP` */
+/** @brief Add/remove DNS server: `dns {INTERFACE} {add|del} IP` */
 static void cmdDns(Dbus& bus, Arguments& args)
 {
     const char* iface = args.asNetInterface();
     const Action action = args.asAction();
-
-    const char* nextArg = args.peek();
-    const bool isStatic = nextArg && strcmp(nextArg, "static") == 0;
-    const char* property;
-    if (isStatic)
-    {
-        ++args;
-        property = Dbus::ethStNameServers;
-    }
-    else
-    {
-        property = Dbus::ethNameServers;
-    }
 
     const auto [_, srv] = args.asIpAddress();
     args.expectEnd();
@@ -224,11 +211,13 @@ static void cmdDns(Dbus& bus, Arguments& args)
 
     if (action == Action::add)
     {
-        bus.append(object.c_str(), Dbus::ethInterface, property, srv);
+        bus.append(object.c_str(), Dbus::ethInterface, Dbus::ethStNameServers,
+                   srv);
     }
     else
     {
-        bus.remove(object.c_str(), Dbus::ethInterface, property, srv);
+        bus.remove(object.c_str(), Dbus::ethInterface, Dbus::ethStNameServers,
+                   srv);
     }
 
     puts(completeMessage);
@@ -298,7 +287,7 @@ static const Command commands[] = {
     {"ip", "{INTERFACE} {add|del} IP[/MASK GATEWAY]", "Add or remove static IP address", cmdIp},
     {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
-    {"dns", "{INTERFACE} {add|del} [static] IP", "Add or remove DNS server", cmdDns},
+    {"dns", "{INTERFACE} {add|del} IP", "Add or remove DNS server", cmdDns},
     {"ntp", "{INTERFACE} {add|del} IP", "Add or remove NTP server", cmdNtp},
     {"vlan", "{add|del} {INTERFACE} ID", "Add or remove VLAN", cmdVlan},
 };

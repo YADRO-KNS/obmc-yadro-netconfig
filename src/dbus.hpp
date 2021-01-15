@@ -172,13 +172,13 @@ class Dbus
      * @param[in] object path to D-Bus object
      * @param[in] interface property's interface name
      * @param[in] name property's name
-     * @param[in] value value to add
+     * @param[in] values list of values to add
      *
      * @throw std::invalid_arguments if value already exists
      * @throw std::exception in case of errors
      */
     void append(const char* object, const char* interface, const char* name,
-                const char* value);
+                const std::vector<std::string>& values);
 
     /**
      * @brief Remove string value from property array.
@@ -186,13 +186,13 @@ class Dbus
      * @param[in] object path to D-Bus object
      * @param[in] interface property's interface name
      * @param[in] name property's name
-     * @param[in] value value to remove
+     * @param[in] valuea list of values to remove
      *
      * @throw std::invalid_arguments if value is not exist
      * @throw std::exception in case of errors
      */
     void remove(const char* object, const char* interface, const char* name,
-                const char* value);
+                const std::vector<std::string>& values);
 
     /**
      * @struct IpAddress

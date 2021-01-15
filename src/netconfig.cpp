@@ -195,56 +195,64 @@ static void cmdDhcpcfg(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove DNS server: `dns {INTERFACE} {add|del} IP` */
+/** @brief Add/remove DNS server: `dns {INTERFACE} {add|del} IP [IP..]` */
 static void cmdDns(Dbus& bus, Arguments& args)
 {
     const char* iface = args.asNetInterface();
     const Action action = args.asAction();
 
-    const auto [_, srv] = args.asIpAddress();
+    std::vector<std::string> servers;
+    while (args.peek() != nullptr)
+    {
+        const auto [_, srv] = args.asIpAddress();
+        servers.emplace_back(srv);
+        printf("%s DNS server %s...\n",
+               action == Action::add ? "Adding" : "Removing", srv);
+    }
     args.expectEnd();
 
     const std::string object = Dbus::ethToPath(iface);
-
-    printf("%s DNS server %s...\n",
-           action == Action::add ? "Adding" : "Removing", srv);
-
     if (action == Action::add)
     {
         bus.append(object.c_str(), Dbus::ethInterface, Dbus::ethStNameServers,
-                   srv);
+                   servers);
     }
     else
     {
         bus.remove(object.c_str(), Dbus::ethInterface, Dbus::ethStNameServers,
-                   srv);
+                   servers);
     }
 
     puts(completeMessage);
 }
 
-/** @brief Add/remove NTP server: `ntp {INTERFACE} {add|del} IP` */
+/** @brief Add/remove NTP server: `ntp {INTERFACE} {add|del} IP [IP..]` */
 static void cmdNtp(Dbus& bus, Arguments& args)
 {
     const char* iface = args.asNetInterface();
     const Action action = args.asAction();
-    const char* srv = args.asText();
+
+    std::vector<std::string> servers;
+    while (args.peek() != nullptr)
+    {
+        const char* srv = args.asText();
+        printf("%s NTP server %s...\n",
+               action == Action::add ? "Adding" : "Removing", srv);
+        servers.emplace_back(srv);
+    }
     args.expectEnd();
 
     const std::string object = Dbus::ethToPath(iface);
 
-    printf("%s NTP server %s...\n",
-           action == Action::add ? "Adding" : "Removing", srv);
-
     if (action == Action::add)
     {
         bus.append(object.c_str(), Dbus::ethInterface, Dbus::ethNtpServers,
-                   srv);
+                   servers);
     }
     else
     {
         bus.remove(object.c_str(), Dbus::ethInterface, Dbus::ethNtpServers,
-                   srv);
+                   servers);
     }
 
     puts(completeMessage);
@@ -287,8 +295,8 @@ static const Command commands[] = {
     {"ip", "{INTERFACE} {add|del} IP[/MASK GATEWAY]", "Add or remove static IP address", cmdIp},
     {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
-    {"dns", "{INTERFACE} {add|del} IP", "Add or remove DNS server", cmdDns},
-    {"ntp", "{INTERFACE} {add|del} IP", "Add or remove NTP server", cmdNtp},
+    {"dns", "{INTERFACE} {add|del} IP [IP..]", "Add or remove DNS server", cmdDns},
+    {"ntp", "{INTERFACE} {add|del} IP [IP..]", "Add or remove NTP server", cmdNtp},
     {"vlan", "{add|del} {INTERFACE} ID", "Add or remove VLAN", cmdVlan},
 };
 // clang-format on

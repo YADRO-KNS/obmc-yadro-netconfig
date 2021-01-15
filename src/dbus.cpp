@@ -9,34 +9,50 @@ Dbus::Dbus() : bus(sdbusplus::bus::new_default())
 {}
 
 void Dbus::append(const char* object, const char* interface, const char* name,
-                  const char* value)
+                  const std::vector<std::string>& values)
 {
     auto array = get<std::vector<std::string>>(object, interface, name);
-    const auto it = std::find(array.begin(), array.end(), value);
-    if (it != array.end())
+    bool needUpdate = false;
+
+    for (const auto& value : values)
     {
-        std::string err = "Value ";
-        err += value;
-        err += " already exists";
-        throw std::invalid_argument(err);
+        const auto it = std::find(array.begin(), array.end(), value);
+        if (it == array.end())
+        {
+            array.push_back(value);
+            needUpdate = true;
+        }
     }
-    array.push_back(value);
+
+    if (!needUpdate)
+    {
+        throw std::invalid_argument("No new values specified");
+    }
+
     set(object, interface, name, array);
 }
 
 void Dbus::remove(const char* object, const char* interface, const char* name,
-                  const char* value)
+                  const std::vector<std::string>& values)
 {
     auto array = get<std::vector<std::string>>(object, interface, name);
-    const auto it = std::find(array.begin(), array.end(), value);
-    if (it == array.end())
+    bool needUpdate = false;
+
+    for (const auto& value : values)
     {
-        std::string err = "Value ";
-        err += value;
-        err += " not found";
-        throw std::invalid_argument(err);
+        const auto it = std::find(array.begin(), array.end(), value);
+        if (it != array.end())
+        {
+            array.erase(it);
+            needUpdate = true;
+        }
     }
-    array.erase(it);
+
+    if (!needUpdate)
+    {
+        throw std::invalid_argument("No values to remove found");
+    }
+
     set(object, interface, name, array);
 }
 

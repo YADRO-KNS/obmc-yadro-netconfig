@@ -158,9 +158,23 @@ static void cmdDhcp(Dbus& bus, Arguments& args)
     args.expectEnd();
 
     const std::string object = Dbus::ethToPath(iface);
-    const bool enable = toggle == Toggle::enable;
+    std::string enable;
 
-    printf("%s DHCP client...\n", enable ? "Enable" : "Disable");
+    switch (toggle)
+    {
+        case Toggle::enable:
+            enable =
+                "xyz.openbmc_project.Network.EthernetInterface.DHCPConf.both";
+            break;
+
+        case Toggle::disable:
+            enable =
+                "xyz.openbmc_project.Network.EthernetInterface.DHCPConf.none";
+            break;
+    }
+
+    printf("%s DHCP client...\n",
+           toggle == Toggle::enable ? "Enable" : "Disable");
 
     bus.set(object.c_str(), Dbus::ethInterface, Dbus::ethDhcpEnabled, enable);
 

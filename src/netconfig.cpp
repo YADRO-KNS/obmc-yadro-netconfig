@@ -97,7 +97,7 @@ static void cmdGateway(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove IP: `ip {INTERFACE} {add|del} IP[/MASK GATEWAY]` */
+/** @brief Add/remove IP: `ip {INTERFACE} {add|del} IP[/MASK]` */
 static void cmdIp(Dbus& bus, Arguments& args)
 {
     const char* iface = args.asNetInterface();
@@ -108,18 +108,13 @@ static void cmdIp(Dbus& bus, Arguments& args)
     if (action == Action::add)
     {
         const auto [ipVer, ip, mask] = args.asIpAddrMask();
-        const auto [gwVer, gwIp] = args.asIpAddress();
         args.expectEnd();
-        if (ipVer != gwVer)
-        {
-            throw std::invalid_argument("IP version mismatch");
-        }
 
         const char* ipInterface =
             ipVer == IpVer::v4 ? Dbus::ip4Interface : Dbus::ip6Interface;
 
         bus.call(object.c_str(), Dbus::ipCreateInterface, Dbus::ipCreateMethod,
-                 ipInterface, ip, mask, gwIp);
+                 ipInterface, ip, mask, "");
     }
     else
     {
@@ -306,7 +301,7 @@ static const Command commands[] = {
     {"mac", "{INTERFACE} MAC", "Set MAC address", cmdMac},
     {"hostname", "NAME", "Set host name", cmdHostname},
     {"gateway", "IP", "Set default gateway", cmdGateway},
-    {"ip", "{INTERFACE} {add|del} IP[/MASK GATEWAY]", "Add or remove static IP address", cmdIp},
+    {"ip", "{INTERFACE} {add|del} IP[/MASK]", "Add or remove static IP address", cmdIp},
     {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
     {"dns", "{INTERFACE} {add|del} IP [IP..]", "Add or remove DNS server", cmdDns},

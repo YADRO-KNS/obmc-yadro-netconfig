@@ -182,9 +182,21 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
             }
         }
     }
+    else
+    {
+        const std::optional<IpVer> ver = isIpAddress(arg);
+        if (ver.has_value())
+        {
+            constexpr uint8_t ip4Prefix = 24;
+            constexpr uint8_t ip6Prefix = 64;
+
+            return std::make_tuple(ver.value(), arg,
+                                   ver == IpVer::v4 ? ip4Prefix : ip6Prefix);
+        }
+    }
     std::string err = "Invalid argument: ";
     err += arg;
-    err += ", expected IP/PREFIX (e.g. 10.0.0.1/8)";
+    err += ", expected IP[/PREFIX] (e.g. 10.0.0.1/8 or 192.168.1.1)";
     throw std::invalid_argument(err);
 }
 

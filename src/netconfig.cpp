@@ -102,25 +102,24 @@ static void cmdIp(Dbus& bus, Arguments& args)
 {
     const char* iface = args.asNetInterface();
     const Action action = args.asAction();
+    const auto [ipVer, ip, mask] = args.asIpAddrMask();
+    args.expectEnd();
 
     const std::string object = Dbus::ethToPath(iface);
 
     if (action == Action::add)
     {
-        const auto [ipVer, ip, mask] = args.asIpAddrMask();
-        args.expectEnd();
-
         const char* ipInterface =
             ipVer == IpVer::v4 ? Dbus::ip4Interface : Dbus::ip6Interface;
 
         bus.call(object.c_str(), Dbus::ipCreateInterface, Dbus::ipCreateMethod,
                  ipInterface, ip, mask, "");
+
+        printf("Request for setting %s/%d on %s has been sent\n", ip.c_str(),
+               mask, iface);
     }
     else
     {
-        const auto [_, ip] = args.asIpAddress();
-        args.expectEnd();
-
         // Search for IP address' object
         bool handled = false;
         for (const auto& it : bus.getAddresses(object.c_str()))
@@ -140,9 +139,9 @@ static void cmdIp(Dbus& bus, Arguments& args)
             err += " not found";
             throw std::invalid_argument(err);
         }
-    }
 
-    puts(completeMessage);
+        puts(completeMessage);
+    }
 }
 
 /** @brief Enable/disable DHCP client: 'dhcp {INTERFACE} {enable|disable}` */
@@ -301,7 +300,7 @@ static const Command commands[] = {
     {"mac", "{INTERFACE} MAC", "Set MAC address", cmdMac},
     {"hostname", "NAME", "Set host name", cmdHostname},
     {"gateway", "IP", "Set default gateway", cmdGateway},
-    {"ip", "{INTERFACE} {add|del} IP[/MASK]", "Add or remove static IP address", cmdIp},
+    {"ip", "{INTERFACE} {add|del} IP[/MASK]", "Add or remove static IP address (default mask: IPv4/24, IPv6/64)", cmdIp},
     {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
     {"dns", "{INTERFACE} {add|del} IP [IP..]", "Add or remove DNS server", cmdDns},

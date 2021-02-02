@@ -134,6 +134,7 @@ TEST(ArgumentsTest, IpAddrMask)
                         const_cast<char*>("127.0.0.1/"),
                         const_cast<char*>("127.0.0/8"),
                         const_cast<char*>("2001:db8:a::123/64"),
+                        const_cast<char*>("2001:db8:a::123"),
                         const_cast<char*>("text"),
                         const_cast<char*>("")};
     const int argsNum = sizeof(testArgs) / sizeof(testArgs[0]);
@@ -143,9 +144,11 @@ TEST(ArgumentsTest, IpAddrMask)
     EXPECT_EQ(args.asIpAddrMask(), std::make_tuple(IpVer::v4, "127.0.0.1", 8));
     ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);
     ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);
+    EXPECT_EQ(args.asIpAddrMask(), std::make_tuple(IpVer::v4, "127.0.0.1", 24));
     ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);
     ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);
-    ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);
+    EXPECT_EQ(args.asIpAddrMask(),
+              std::make_tuple(IpVer::v6, "2001:db8:a::123", 64));
     EXPECT_EQ(args.asIpAddrMask(),
               std::make_tuple(IpVer::v6, "2001:db8:a::123", 64));
     ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);

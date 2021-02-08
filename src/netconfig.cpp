@@ -87,7 +87,7 @@ static void cmdGateway(Dbus& bus, Arguments& args)
     args.expectEnd();
 
     printf("Setting default gateway for IPv%i to %s...\n",
-           static_cast<int>(ver), ip);
+           static_cast<int>(ver), ip.c_str());
 
     const char* property =
         ver == IpVer::v4 ? Dbus::syscfgDefGw4 : Dbus::syscfgDefGw6;
@@ -215,7 +215,7 @@ static void cmdDns(Dbus& bus, Arguments& args)
         const auto [_, srv] = args.asIpAddress();
         servers.emplace_back(srv);
         printf("%s DNS server %s...\n",
-               action == Action::add ? "Adding" : "Removing", srv);
+               action == Action::add ? "Adding" : "Removing", srv.c_str());
     }
     args.expectEnd();
 

@@ -161,7 +161,7 @@ class Arguments
      *
      * @return argument value: IP version and address
      */
-    std::tuple<IpVer, const char*> asIpAddress();
+    std::tuple<IpVer, std::string> asIpAddress();
 
     /**
      * @brief Get current argument as IP address with prefix length.
@@ -184,13 +184,15 @@ class Arguments
     static bool isNumber(const char* arg);
 
     /**
-     * @brief Check for IP address.
+     * @brief Trying to parse string as an IP address.
      *
-     * @param[in] arg value to check
+     * @param[in] arg value to parse
      *
-     * @return IP version or nullopt if checked value is not a valid IP address
+     * @throw std::invalid_argument if parsing is failed
+     *
+     * @return IP version and string with the IP address in unified format.
      */
-    static std::optional<IpVer> isIpAddress(const char* arg);
+    static std::tuple<IpVer, std::string> parseIpAddress(const char* arg);
 
   private:
     using Args = std::vector<char*>;

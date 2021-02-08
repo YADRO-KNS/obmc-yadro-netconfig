@@ -144,18 +144,21 @@ const char* Arguments::asMacAddress()
     return arg;
 }
 
-std::tuple<IpVer, const char*> Arguments::asIpAddress()
+std::tuple<IpVer, std::string> Arguments::asIpAddress()
 {
     const char* arg = asText();
-    const std::optional<IpVer> ver = isIpAddress(arg);
-    if (!ver.has_value())
+
+    try
+    {
+        return parseIpAddress(arg);
+    }
+    catch (const std::invalid_argument&)
     {
         std::string err = "Invalid IP address: ";
         err += arg;
         err += ", expected IPv4 or IPv6 address";
         throw std::invalid_argument(err);
     }
-    return std::make_tuple(ver.value(), arg);
 }
 
 std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
@@ -168,30 +171,39 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
         if (isNumber(maskText))
         {
             const std::string addr(arg, delim);
-            const std::optional<IpVer> ver = isIpAddress(addr.c_str());
-            if (ver.has_value())
+            try
             {
+                const auto [ver, ip] = parseIpAddress(addr.c_str());
+
                 constexpr size_t ip4MaxPrefix = 32;
                 constexpr size_t ip6MaxPrefix = 64;
                 const size_t prefix = strtoul(maskText, nullptr, 0);
                 if (prefix && ((ver == IpVer::v4 && prefix <= ip4MaxPrefix) ||
                                (ver == IpVer::v6 && prefix <= ip6MaxPrefix)))
                 {
-                    return std::make_tuple(ver.value(), addr, prefix);
+                    return std::make_tuple(ver, ip, prefix);
                 }
+            }
+            catch (const std::invalid_argument&)
+            {
+                // pass
             }
         }
     }
     else
     {
-        const std::optional<IpVer> ver = isIpAddress(arg);
-        if (ver.has_value())
+        try
         {
+            const auto [ver, ip] = parseIpAddress(arg);
             constexpr uint8_t ip4Prefix = 24;
             constexpr uint8_t ip6Prefix = 64;
 
-            return std::make_tuple(ver.value(), arg,
+            return std::make_tuple(ver, ip,
                                    ver == IpVer::v4 ? ip4Prefix : ip6Prefix);
+        }
+        catch (const std::invalid_argument&)
+        {
+            // pass
         }
     }
     std::string err = "Invalid argument: ";
@@ -210,22 +222,36 @@ bool Arguments::isNumber(const char* arg)
     return std::all_of(arg, arg + len, isdigit);
 }
 
-std::optional<IpVer> Arguments::isIpAddress(const char* arg)
+std::tuple<IpVer, std::string> Arguments::parseIpAddress(const char* arg)
 {
     if (arg)
     {
-        in_addr dummy4;
-        if (inet_pton(AF_INET, arg, &dummy4) == 1)
+        constexpr auto bufferMaxSize = sizeof(struct in6_addr);
+        char dummy[bufferMaxSize];
+        int family = 0;
+
+        if (inet_pton(AF_INET, arg, dummy) == 1)
         {
-            return IpVer::v4;
+            family = AF_INET;
+        }
+        else if (inet_pton(AF_INET6, arg, dummy) == 1)
+        {
+            family = AF_INET6;
         }
 
-        in6_addr dummy6;
-        if (inet_pton(AF_INET6, arg, &dummy6) == 1)
+        if (family != 0)
         {
-            return IpVer::v6;
+            std::string ip(INET6_ADDRSTRLEN, '\0');
+            if (inet_ntop(family, dummy, ip.data(), ip.size()) != nullptr)
+            {
+                ip.resize(strlen(ip.c_str()));
+                return std::make_tuple(
+                    (family == AF_INET ? IpVer::v4 : IpVer::v6), ip);
+            }
         }
     }
 
-    return std::nullopt;
+    std::string err = "Invalid IP address: ";
+    err += arg;
+    throw std::invalid_argument(err);
 }

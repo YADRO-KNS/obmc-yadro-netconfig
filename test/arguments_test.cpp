@@ -106,6 +106,7 @@ TEST(ArgumentsTest, IpAddress)
         const_cast<char*>("127.0.0,1"),
         const_cast<char*>("127.0.0"),
         const_cast<char*>("127.0.0.1.2"),
+        const_cast<char*>("2001:db8:85a3::8a2e:370:7334"),
         const_cast<char*>("2001:0db8:85a3:0000:0000:8a2e:0370:7334"),
         const_cast<char*>("::"),
         const_cast<char*>("text"),
@@ -120,7 +121,10 @@ TEST(ArgumentsTest, IpAddress)
     ASSERT_THROW(args.asIpAddress(), std::invalid_argument);
     ASSERT_THROW(args.asIpAddress(), std::invalid_argument);
     EXPECT_EQ(args.asIpAddress(), std::make_tuple(IpVer::v6, testArgs[5]));
-    EXPECT_EQ(args.asIpAddress(), std::make_tuple(IpVer::v6, testArgs[6]));
+    // NOTE: Next test checks that zeroed words are truncated.
+    //       So, the same index using in testArgs[] is not a mistype.
+    EXPECT_EQ(args.asIpAddress(), std::make_tuple(IpVer::v6, testArgs[5]));
+    EXPECT_EQ(args.asIpAddress(), std::make_tuple(IpVer::v6, testArgs[7]));
     ASSERT_THROW(args.asIpAddress(), std::invalid_argument);
     ASSERT_THROW(args.asIpAddress(), std::invalid_argument);
 }

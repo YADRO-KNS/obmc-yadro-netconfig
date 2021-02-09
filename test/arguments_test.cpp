@@ -158,3 +158,95 @@ TEST(ArgumentsTest, IpAddrMask)
     ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);
     ASSERT_THROW(args.asIpAddrMask(), std::invalid_argument);
 }
+
+TEST(ArgumentsTest, IpOrFQDNPositive)
+{
+    char* testArgs[] = {
+        const_cast<char*>("127.0.0.1"),
+        const_cast<char*>("::1"),
+        const_cast<char*>("a.com"),
+        const_cast<char*>("foo-bar.com"),
+        const_cast<char*>("1.2.3.4.com"),
+        const_cast<char*>("xn--d1abbgf6aiiy.xn--p1ai"), // президент.рф
+        const_cast<char*>("text"),
+        const_cast<char*>("123"),
+        const_cast<char*>("a."),
+        const_cast<char*>("a"),
+        const_cast<char*>("foo-bar"),
+        const_cast<char*>("foo-bar."),
+        const_cast<char*>("1234567890-1234567890-1234567890-1234567890-"
+                          "1234567890-12345678.ru"),
+        const_cast<char*>("1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.ru"),
+    };
+
+    const int argsNum = sizeof(testArgs) / sizeof(testArgs[0]);
+
+    Arguments args(argsNum, testArgs);
+
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[0]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[1]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[2]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[3]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[4]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[5]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[6]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[7]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[8]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[9]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[10]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[11]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[12]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[13]);
+}
+
+TEST(ArgumentsTest, IpOrFQDNNegative)
+{
+    char* testArgs[] = {
+        const_cast<char*>("-"),
+        const_cast<char*>("-a"),
+        const_cast<char*>("a-"),
+        const_cast<char*>("--help"),
+        const_cast<char*>(".a"),
+        const_cast<char*>(".ru"),
+        const_cast<char*>(".xn--p1ai"),
+        const_cast<char*>("."),
+        const_cast<char*>("-foo-bar-.com"),
+        const_cast<char*>("-foo-bar.com"),
+        const_cast<char*>("foo-bar-.com"),
+        const_cast<char*>("foo_bar.com"),
+        const_cast<char*>("foo+bar.com"),
+        const_cast<char*>("1234567890-1234567890-1234567890-1234567890-"
+                          "1234567890-123456789.com"),
+        const_cast<char*>("1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.1234567890."
+                          "1234567890.1234567890.1234567890.com"),
+    };
+
+    const int argsNum = sizeof(testArgs) / sizeof(testArgs[0]);
+
+    Arguments args(argsNum, testArgs);
+
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+}

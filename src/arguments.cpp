@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstring>
 #include <numeric>
+#include <regex>
 #include <stdexcept>
 
 /** @brief Max length of a numeric value. */
@@ -209,6 +210,46 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
     std::string err = "Invalid argument: ";
     err += arg;
     err += ", expected IP[/PREFIX] (e.g. 10.0.0.1/8 or 192.168.1.1)";
+    throw std::invalid_argument(err);
+}
+
+std::string Arguments::asIpOrFQDN()
+{
+    const char* arg = asText();
+
+    try
+    {
+        auto [_, addr] = parseIpAddress(arg);
+        return addr;
+    }
+    catch (const std::invalid_argument&)
+    {
+        // pass
+    }
+
+    static const std::regex r(
+        // According to RFC2181:
+        // A full domain name is limited to 255 octets
+        // (including separators),
+        "(?=^.{1,255}$)"
+        "(^"
+        // - The length of any single label is limited to 63 octets.
+        // - labels must not start or end with hyphens.
+        // - Total number of labels is limited to 127
+        "((?!-)[a-z0-9-]{0,62}[a-z0-9]\\.){0,126}"
+        // Trailing dot is optional
+        "((?!-)[a-z0-9-]{0,62}[a-z0-9]\\.?)"
+        "$)",
+        std::regex_constants::icase);
+
+    if (std::regex_match(arg, r))
+    {
+        return arg;
+    }
+
+    std::string err = "Invalid argument: ";
+    err += arg;
+    err += ", expected IP address or FQDN";
     throw std::invalid_argument(err);
 }
 

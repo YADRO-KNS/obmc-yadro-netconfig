@@ -175,6 +175,17 @@ class Arguments
     std::tuple<IpVer, std::string, uint8_t> asIpAddrMask();
 
     /**
+     * @brief Get current argument as IP address or hostname.
+     *        Argument pointer will be moved to the next entry.
+     *
+     * @throw std::invalid_argument if there are no more arguments to handle
+     *                              or argument has invalid format
+     *
+     * @return IP address in unified format or hostname
+     */
+    std::string asIpOrFQDN();
+
+    /**
      * @brief Check for unsigned numeric format.
      *
      * @param[in] arg value to check

@@ -71,10 +71,10 @@ static void cmdMac(Dbus& bus, Arguments& args)
 /** @brief Set BMC host name: `hostname NAME` */
 static void cmdHostname(Dbus& bus, Arguments& args)
 {
-    const char* name = args.asText();
+    std::string name = args.asIpOrFQDN();
     args.expectEnd();
 
-    printf("Set new host name %s...\n", name);
+    printf("Set new host name %s...\n", name.c_str());
     bus.set(Dbus::objectConfig, Dbus::syscfgInterface, Dbus::syscfgHostname,
             name);
     puts(completeMessage);
@@ -234,7 +234,7 @@ static void cmdDns(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Add/remove NTP server: `ntp {INTERFACE} {add|del} IP [IP..]` */
+/** @brief Add/remove NTP server: `ntp {INTERFACE} {add|del} ADDR [ADDR..]` */
 static void cmdNtp(Dbus& bus, Arguments& args)
 {
     const char* iface = args.asNetInterface();
@@ -243,9 +243,9 @@ static void cmdNtp(Dbus& bus, Arguments& args)
     std::vector<std::string> servers;
     while (args.peek() != nullptr)
     {
-        const char* srv = args.asText();
+        std::string srv = args.asIpOrFQDN();
         printf("%s NTP server %s...\n",
-               action == Action::add ? "Adding" : "Removing", srv);
+               action == Action::add ? "Adding" : "Removing", srv.c_str());
         servers.emplace_back(srv);
     }
     args.expectEnd();
@@ -304,7 +304,7 @@ static const Command commands[] = {
     {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
     {"dns", "{INTERFACE} {add|del} IP [IP..]", "Add or remove DNS server", cmdDns},
-    {"ntp", "{INTERFACE} {add|del} IP [IP..]", "Add or remove NTP server", cmdNtp},
+    {"ntp", "{INTERFACE} {add|del} ADDR [ADDR..]", "Add or remove NTP server", cmdNtp},
     {"vlan", "{add|del} {INTERFACE} ID", "Add or remove VLAN", cmdVlan},
 };
 // clang-format on

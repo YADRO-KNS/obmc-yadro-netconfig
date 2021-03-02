@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright (C) 2020 YADRO
+// Copyright (C) 2020-2021 YADRO
 
 #include "netconfig.hpp"
 #include "version.hpp"
@@ -15,6 +15,15 @@ int main(int argc, char* argv[])
     try
     {
         const char* cmd = args.peek();
+        bool cli_mode = false;
+
+        if (cmd && !strcmp(cmd, "--cli"))
+        {
+            cli_mode = true;
+            ++args;
+            cmd = args.peek();
+        }
+
         if (!cmd || strcmp(cmd, "help") == 0 || strcmp(cmd, "--help") == 0 ||
             strcmp(cmd, "-h") == 0)
         {
@@ -24,12 +33,17 @@ int main(int argc, char* argv[])
             }
             if (!args.peek())
             {
-                printf("OpenBMC network configuration.\n");
-                printf("Copyright (c) 2020 YADRO.\n");
-                printf("Version " VERSION ".\n");
+                if (!cli_mode)
+                {
+                    printf("OpenBMC network configuration tool\n");
+                    printf("Copyright (C) 2020-2021 YADRO\n");
+                    printf("Version " VERSION "\n\n");
+                }
                 printf("Usage: %s COMMAND [OPTION...]\n", app);
+                printf("       %s help COMMAND\n\n", app);
+                printf("COMMANDS:\n");
             }
-            help(args);
+            help(cli_mode, app, args);
         }
         else
         {

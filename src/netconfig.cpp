@@ -328,7 +328,7 @@ void execute(Arguments& args)
     throw std::invalid_argument(err);
 }
 
-void help(Arguments& args)
+void help(bool cli_mode, const char* app, Arguments& args)
 {
     const char* helpForCmd = args.peek();
     if (helpForCmd)
@@ -349,7 +349,18 @@ void help(Arguments& args)
             throw std::invalid_argument(err);
         }
         puts(cmdEntry->help);
-        printf("%s %s\n", cmdEntry->name, cmdEntry->fmt ? cmdEntry->fmt : "");
+
+        // Command-specific help should not include the name of the command
+        // in CLI mode as in that mode it will be passed in as part of `app`
+        // and may differ from the actual command being processed, e.g.
+        // CLI command `bmc datetime ntpconfig` equals `netconfig ntp`,
+        // and the help must pretend it's the CLI command.
+        printf("%s ", app);
+        if (!cli_mode)
+        {
+            printf("%s ", cmdEntry->name);
+        }
+        printf("%s\n", cmdEntry->fmt ? cmdEntry->fmt : "");
     }
     else
     {

@@ -17,6 +17,9 @@ void execute(Arguments& args);
 /**
  * @brief Print usage help.
  *
- * @param[in] args command line arguments
+ * @param[in] cli_mode CLI mode. Don't prepend arguments info with
+ *                     the command name for single-command help.
+ * @param[in] app      application name
+ * @param[in] args     command line arguments
  */
-void help(Arguments& args);
+void help(bool cli_mode, const char *app, Arguments& args);

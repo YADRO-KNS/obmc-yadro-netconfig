@@ -46,6 +46,15 @@ const char* Arguments::peek() const
     return current == args.end() ? nullptr : *current;
 }
 
+const char* Arguments::peekNext() const
+{
+    if (peek() && (current + 1) != args.end()) {
+        return *(current + 1);
+    }
+
+    return nullptr;
+}
+
 const char* Arguments::asText()
 {
     const char* arg = peek();

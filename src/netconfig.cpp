@@ -277,16 +277,31 @@ static void cmdVlan(Dbus& bus, Arguments& args)
     printf("%s VLAN with ID %u...\n",
            action == Action::add ? "Adding" : "Removing", id);
 
-    if (action == Action::add)
+    try
     {
-        bus.call(Dbus::objectRoot, Dbus::vlanCreateInterface,
-                 Dbus::vlanCreateMethod, iface, id);
+        if (action == Action::add)
+        {
+            bus.call(Dbus::objectRoot, Dbus::vlanCreateInterface,
+                    Dbus::vlanCreateMethod, iface, id);
+        }
+        else
+        {
+            const std::string object =
+                Dbus::ethToPath(iface) + '_' + std::to_string(id);
+            bus.call(object.c_str(), Dbus::deleteInterface, Dbus::deleteMethod);
+        }
     }
-    else
+    catch(const std::exception& e)
     {
-        const std::string object =
-            Dbus::ethToPath(iface) + '_' + std::to_string(id);
-        bus.call(object.c_str(), Dbus::deleteInterface, Dbus::deleteMethod);
+        if ((action == Action::del) &&
+            (strstr(e.what(), "org.freedesktop.DBus.Error.UnknownObject") != NULL))
+        {
+            puts("Can't delete a nonexistent interface.");
+        }
+        else
+        {
+            puts(e.what());
+        }
     }
 
     puts(completeMessage);

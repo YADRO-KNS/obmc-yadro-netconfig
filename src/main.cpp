@@ -6,6 +6,12 @@
 
 #include <cstring>
 
+bool isHelp(const char* str)
+{
+    return str && (!strcmp(str, "help") || !strcmp(str, "--help") ||
+                   !strcmp(str, "-h"));
+}
+
 /** @brief Application entry point. */
 int main(int argc, char* argv[])
 {
@@ -24,10 +30,12 @@ int main(int argc, char* argv[])
             cmd = args.peek();
         }
 
-        if (!cmd || strcmp(cmd, "help") == 0 || strcmp(cmd, "--help") == 0 ||
-            strcmp(cmd, "-h") == 0)
+        const char* firstArg = args.peekNext();
+        const bool firstArgHelp = isHelp(firstArg); // Save on strcmp calls
+
+        if (!cmd || isHelp(cmd) || firstArgHelp)
         {
-            if (cmd)
+            if (cmd && !firstArgHelp)
             {
                 ++args;
             }

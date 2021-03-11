@@ -75,6 +75,13 @@ class Arguments
     const char* peek() const;
 
     /**
+     * @brief Peek next argument.
+     *
+     * @return argument text or nullptr if no argument is available
+     */
+    const char* peekNext() const;
+
+    /**
      * @brief Get current argument as pointer to text data.
      *        Argument pointer will be moved to the next entry.
      *

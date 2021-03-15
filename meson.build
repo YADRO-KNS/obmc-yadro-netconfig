@@ -35,5 +35,6 @@ executable(
   dependencies: [
     dependency('sdbusplus'),
   ],
-  install: true
+  install: true,
+  install_dir: get_option('sbindir'),
 )

@@ -343,7 +343,7 @@ void execute(Arguments& args)
     throw std::invalid_argument(err);
 }
 
-void help(bool cli_mode, const char* app, Arguments& args)
+void help(CLIMode mode, const char* app, Arguments& args)
 {
     const char* helpForCmd = args.peek();
     if (helpForCmd)
@@ -371,7 +371,7 @@ void help(bool cli_mode, const char* app, Arguments& args)
         // CLI command `bmc datetime ntpconfig` equals `netconfig ntp`,
         // and the help must pretend it's the CLI command.
         printf("%s ", app);
-        if (!cli_mode)
+        if (mode != CLIMode::cliModeNoCommand)
         {
             printf("%s ", cmdEntry->name);
         }

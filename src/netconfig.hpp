@@ -14,6 +14,12 @@
  */
 void execute(Arguments& args);
 
+enum class CLIMode {
+  normalMode, ///< Normal mode, print the banner and the command name in help
+  cliMode, ///< CLI mode, do not print banner, print command name in help
+  cliModeNoCommand ///< CLI mode, print neither the banner, nor the command name in help
+};
+
 /**
  * @brief Print usage help.
  *
@@ -22,4 +28,4 @@ void execute(Arguments& args);
  * @param[in] app      application name
  * @param[in] args     command line arguments
  */
-void help(bool cli_mode, const char *app, Arguments& args);
+void help(cli_mode mode, const char *app, Arguments& args);

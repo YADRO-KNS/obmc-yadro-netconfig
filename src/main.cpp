@@ -21,12 +21,18 @@ int main(int argc, char* argv[])
     try
     {
         const char* cmd = args.peek();
-        bool cli_mode = false;
+        CLIMode mode = CLIMode::normalMode;
 
-        if (cmd && !strcmp(cmd, "--cli"))
+        if (cmd && !strncmp(cmd, "--cli", 5))
         {
-            cli_mode = true;
+            mode = CLIMode::cliMode;
             ++args;
+
+            if (!strcmp(cmd, "--cli-hide-cmd"))
+            {
+                mode = CLIMode::cliModeNoCommand;
+            }
+
             cmd = args.peek();
         }
 
@@ -41,7 +47,7 @@ int main(int argc, char* argv[])
             }
             if (!args.peek())
             {
-                if (!cli_mode)
+                if (mode == CLIMode::normalMode)
                 {
                     printf("OpenBMC network configuration tool\n");
                     printf("Copyright (C) 2020-2021 YADRO\n");
@@ -51,7 +57,7 @@ int main(int argc, char* argv[])
                 printf("       %s help COMMAND\n\n", app);
                 printf("COMMANDS:\n");
             }
-            help(cli_mode, app, args);
+            help(mode, app, args);
         }
         else
         {

@@ -28,4 +28,4 @@ enum class CLIMode {
  * @param[in] app      application name
  * @param[in] args     command line arguments
  */
-void help(cli_mode mode, const char *app, Arguments& args);
+void help(CLIMode mode, const char *app, Arguments& args);

@@ -53,6 +53,8 @@ class Dbus
     static constexpr const char* ethNtpServers = "NTPServers";
     static constexpr const char* ethNameServers = "Nameservers";
     static constexpr const char* ethStNameServers = "StaticNameServers";
+    static constexpr const char* ethLinkUp = "LinkUp";
+    static constexpr const char* ethSpeed = "Speed";
 
     // VLAN interface, its methods and properties
     static constexpr const char* vlanInterface =

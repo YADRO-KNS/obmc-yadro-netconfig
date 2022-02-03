@@ -49,6 +49,9 @@ void Show::printInterface(const char* obj)
         printProperty("VLAN Id", Dbus::vlanId, cfgVlan);
     }
     printProperty("MAC address", Dbus::macSet, cfgMac);
+    printProperty("Link state", Dbus::ethLinkUp, cfgEth,
+                  std::make_pair("DOWN", "UP"));
+    printProperty("Link speed", Dbus::ethSpeed, cfgEth);
 
     for (const auto& it : bus.getAddresses(obj))
     {
@@ -62,7 +65,6 @@ void Show::printInterface(const char* obj)
         }
         printProperty("IP address", val.c_str());
     }
-
     printProperty("DHCP", Dbus::ethDhcpEnabled, cfgEth);
 
     const auto cfgDnsNtp = getProperties(obj, Dbus::ethInterface);
@@ -71,8 +73,9 @@ void Show::printInterface(const char* obj)
     printProperty("NTP servers", Dbus::ethNtpServers, cfgDnsNtp);
 }
 
-void Show::printProperty(const char* title, const char* name,
-                         const Dbus::Properties& properties) const
+void Show::printProperty(
+    const char* title, const char* name, const Dbus::Properties& properties,
+    const std::pair<const char*, const char*>& boolVals) const
 {
     const auto it = properties.find(name);
     if (it == properties.end())
@@ -83,11 +86,11 @@ void Show::printProperty(const char* title, const char* name,
     {
         std::string val;
         std::visit(
-            [&val](auto&& arg) {
+            [&val, &boolVals](auto&& arg) {
                 using T = std::decay_t<decltype(arg)>;
                 if constexpr (std::is_same_v<T, bool>)
                 {
-                    val = arg ? "Enabled" : "Disabled";
+                    val = arg ? boolVals.second : boolVals.first;
                 }
                 else if constexpr (std::is_arithmetic<T>::value)
                 {
@@ -116,6 +119,13 @@ void Show::printProperty(const char* title, const char* name,
             it->second);
         printProperty(title, val.c_str());
     }
+}
+
+void Show::printProperty(const char* title, const char* name,
+                         const Dbus::Properties& properties) const
+{
+    printProperty(title, name, properties,
+                  std::make_pair("Disabled", "Enabled"));
 }
 
 void Show::printProperty(const char* name, const char* value) const

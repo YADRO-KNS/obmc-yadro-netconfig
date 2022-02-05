@@ -65,7 +65,16 @@ void Show::printInterface(const char* obj)
         }
         printProperty("IP address", val.c_str());
     }
-    printProperty("DHCP", Dbus::ethDhcpEnabled, cfgEth);
+    printProperty(
+        "DHCP", Dbus::ethDhcpEnabled, cfgEth,
+        {{"xyz.openbmc_project.Network.EthernetInterface.DHCPConf.both",
+          "Enabled (IPv4, IPv6)"},
+         {"xyz.openbmc_project.Network.EthernetInterface.DHCPConf.v4",
+          "Enabled (IPv4 only)"},
+         {"xyz.openbmc_project.Network.EthernetInterface.DHCPConf.v6",
+          "Enabled (IPv6 only)"},
+         {"xyz.openbmc_project.Network.EthernetInterface.DHCPConf.none",
+          "Disabled"}});
 
     const auto cfgDnsNtp = getProperties(obj, Dbus::ethInterface);
     printProperty("DNS servers", Dbus::ethNameServers, cfgDnsNtp);
@@ -73,9 +82,10 @@ void Show::printInterface(const char* obj)
     printProperty("NTP servers", Dbus::ethNtpServers, cfgDnsNtp);
 }
 
-void Show::printProperty(
-    const char* title, const char* name, const Dbus::Properties& properties,
-    const std::pair<const char*, const char*>& boolVals) const
+void Show::printProperty(const char* title, const char* name,
+                         const Dbus::Properties& properties,
+                         const std::pair<const char*, const char*>& boolVals,
+                         const std::map<std::string, std::string>& strMap) const
 {
     const auto it = properties.find(name);
     if (it == properties.end())
@@ -86,7 +96,7 @@ void Show::printProperty(
     {
         std::string val;
         std::visit(
-            [&val, &boolVals](auto&& arg) {
+            [&val, &boolVals, &strMap](auto&& arg) {
                 using T = std::decay_t<decltype(arg)>;
                 if constexpr (std::is_same_v<T, bool>)
                 {
@@ -98,7 +108,8 @@ void Show::printProperty(
                 }
                 else if constexpr (std::is_same_v<T, std::string>)
                 {
-                    val = arg;
+                    auto it = strMap.find(arg);
+                    val = (it == strMap.end()) ? arg : it->second;
                 }
                 else if constexpr (std::is_same_v<T, std::vector<std::string>>)
                 {
@@ -108,7 +119,8 @@ void Show::printProperty(
                         {
                             val += ", ";
                         }
-                        val += a;
+                        auto it = strMap.find(a);
+                        val += (it == strMap.end()) ? a : it->second;
                     }
                 }
                 else
@@ -122,10 +134,25 @@ void Show::printProperty(
 }
 
 void Show::printProperty(const char* title, const char* name,
+                         const Dbus::Properties& properties,
+                         const std::map<std::string, std::string>& strMap) const
+{
+    printProperty(title, name, properties,
+                  std::make_pair("Disabled", "Enabled"), strMap);
+}
+
+void Show::printProperty(const char* title, const char* name,
                          const Dbus::Properties& properties) const
 {
     printProperty(title, name, properties,
-                  std::make_pair("Disabled", "Enabled"));
+                  std::make_pair("Disabled", "Enabled"), {});
+}
+
+void Show::printProperty(
+    const char* title, const char* name, const Dbus::Properties& properties,
+    const std::pair<const char*, const char*>& boolVals) const
+{
+    printProperty(title, name, properties, boolVals, {});
 }
 
 void Show::printProperty(const char* name, const char* value) const

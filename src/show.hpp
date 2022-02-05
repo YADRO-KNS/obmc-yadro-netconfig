@@ -33,7 +33,21 @@ class Show
     void printInterface(const char* obj);
 
     /**
-     * @brief Print property value (with custom bool representations)
+     * @brief Print property value (fully customized)
+     *
+     * @param[in] title property title
+     * @param[in] name property name
+     * @param[in] properties array of properties
+     * @param[in] boolVals a pair of string representations for false/true
+     * @param[in] strMap a mapping for string-typed properties
+     */
+    void
+        printProperty(const char* title, const char* name,
+                      const Dbus::Properties& properties,
+                      const std::pair<const char*, const char*>& boolVals,
+                      const std::map<std::string, std::string>& strMap) const;
+    /**
+     * @brief Print property value (customized bools)
      *
      * @param[in] title property title
      * @param[in] name property name
@@ -46,7 +60,20 @@ class Show
                       const std::pair<const char*, const char*>& boolVals) const;
 
     /**
-     * @brief Print property value
+     * @brief Print property value (customized strings)
+     *
+     * @param[in] title property title
+     * @param[in] name property name
+     * @param[in] properties array of properties
+     * @param[in] strMap a mapping for string-typed properties
+     */
+    void
+        printProperty(const char* title, const char* name,
+                      const Dbus::Properties& properties,
+                      const std::map<std::string, std::string>& strMap) const;
+
+    /**
+     * @brief Print property value (bools and strings as is)
      *
      * @param[in] title property title
      * @param[in] name property name

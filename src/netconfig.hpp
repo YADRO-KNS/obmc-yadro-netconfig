@@ -29,3 +29,7 @@ enum class CLIMode {
  * @param[in] args     command line arguments
  */
 void help(CLIMode mode, const char *app, Arguments& args);
+
+/** @brief IEEE 802.1Q VLAN ID limits. */
+static constexpr uint32_t minVlanId = 2;
+static constexpr uint32_t maxVlanId = 4094;

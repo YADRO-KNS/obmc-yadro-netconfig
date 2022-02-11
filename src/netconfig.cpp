@@ -266,6 +266,16 @@ static void cmdNtp(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
+/** @brief Check VLAN ID for IEEE 802.1Q conformance */
+static void checkVlanId(const uint32_t id)
+{
+    if ((id < minVlanId) || (id > maxVlanId))
+    {
+        std::string err = "Invalid VLAN ID. Must be [2 - 4094], see IEEE 802.1Q.";
+        throw std::invalid_argument(err);
+    }
+}
+
 /** @brief Add/remove VLAN: `vlan {add|del} {INTERFACE} ID` */
 static void cmdVlan(Dbus& bus, Arguments& args)
 {
@@ -273,6 +283,8 @@ static void cmdVlan(Dbus& bus, Arguments& args)
     const char* iface = args.asNetInterface();
     const uint32_t id = static_cast<uint32_t>(args.asNumber());
     args.expectEnd();
+
+    checkVlanId(id);
 
     printf("%s VLAN with ID %u...\n",
            action == Action::add ? "Adding" : "Removing", id);
@@ -298,10 +310,7 @@ static void cmdVlan(Dbus& bus, Arguments& args)
         {
             puts("Can't delete a nonexistent interface.");
         }
-        else
-        {
-            puts(e.what());
-        }
+        throw;
     }
 
     puts(completeMessage);

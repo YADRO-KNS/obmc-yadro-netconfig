@@ -4,6 +4,7 @@
 #pragma once
 
 #include "dbus.hpp"
+#include <set>
 
 /**
  * @class Show
@@ -23,6 +24,12 @@ class Show
      * @brief Print current network configuration.
      */
     void print();
+
+    /**
+     * @brief Parses array of D-Bus network configuration objects
+     * and get all VLAN interfaces
+     */
+    void getVLANIfaces(std::set<std::string>&);
 
   private:
     /**

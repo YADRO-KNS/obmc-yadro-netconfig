@@ -51,6 +51,21 @@ static void cmdReset(Dbus& bus, Arguments& args)
 
     puts("Reset network configuration...");
     bus.call(Dbus::objectRoot, Dbus::resetInterface, Dbus::resetMethod);
+
+    std::set<std::string> vlan_ifaces;
+    Show(bus).getVLANIfaces(vlan_ifaces);
+    for(const auto& it : vlan_ifaces)
+    {
+        try
+        {
+            bus.call(it.c_str(), Dbus::deleteInterface, Dbus::deleteMethod);
+        }
+        catch(const std::exception& e)
+        {
+            puts("Can't delete a nonexistent interface");
+        }
+    }
+
     puts(completeMessage);
 }
 

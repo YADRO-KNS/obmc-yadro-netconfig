@@ -35,6 +35,21 @@ void Show::print()
     }
 }
 
+void Show::getVLANIfaces(std::set<std::string>& vlanIfaces)
+{
+    for (const auto& it : netObjects)
+    {
+        if (it.second.find(Dbus::ethInterface) != it.second.end())
+        {
+            const auto cfgVlan = getProperties(static_cast<std::string>(it.first).c_str(), Dbus::vlanInterface);
+            if (!cfgVlan.empty())
+            {
+                vlanIfaces.insert(static_cast<std::string>(it.first));
+            }
+        }
+    }
+}
+
 void Show::printInterface(const char* obj)
 {
     const auto cfgEth = getProperties(obj, Dbus::ethInterface);

@@ -163,13 +163,15 @@ TEST(ArgumentsTest, IpOrFQDNPositive)
 {
     char* testArgs[] = {
         const_cast<char*>("127.0.0.1"),
+        const_cast<char*>("::"),
         const_cast<char*>("::1"),
+        const_cast<char*>("2001:db8:85a3::8a2e:370:7334"),
         const_cast<char*>("a.com"),
         const_cast<char*>("foo-bar.com"),
         const_cast<char*>("1.2.3.4.com"),
         const_cast<char*>("xn--d1abbgf6aiiy.xn--p1ai"), // президент.рф
         const_cast<char*>("text"),
-        const_cast<char*>("123"),
+        const_cast<char*>("a123"),
         const_cast<char*>("a."),
         const_cast<char*>("a"),
         const_cast<char*>("foo-bar"),
@@ -202,6 +204,8 @@ TEST(ArgumentsTest, IpOrFQDNPositive)
     EXPECT_EQ(args.asIpOrFQDN(), testArgs[11]);
     EXPECT_EQ(args.asIpOrFQDN(), testArgs[12]);
     EXPECT_EQ(args.asIpOrFQDN(), testArgs[13]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[14]);
+    EXPECT_EQ(args.asIpOrFQDN(), testArgs[15]);
 }
 
 TEST(ArgumentsTest, IpOrFQDNNegative)
@@ -215,6 +219,9 @@ TEST(ArgumentsTest, IpOrFQDNNegative)
         const_cast<char*>(".ru"),
         const_cast<char*>(".xn--p1ai"),
         const_cast<char*>("."),
+        const_cast<char*>("123"),
+        const_cast<char*>("123a"),
+        const_cast<char*>("2001:db8:85a3:1a2b:2234:2223:8a2e:370:7334"),
         const_cast<char*>("-foo-bar-.com"),
         const_cast<char*>("-foo-bar.com"),
         const_cast<char*>("foo-bar-.com"),
@@ -234,6 +241,9 @@ TEST(ArgumentsTest, IpOrFQDNNegative)
 
     Arguments args(argsNum, testArgs);
 
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
+    ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
     ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
     ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
     ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);

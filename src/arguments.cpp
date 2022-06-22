@@ -244,10 +244,15 @@ std::string Arguments::asIpOrFQDN()
         "(^"
         // - The length of any single label is limited to 63 octets.
         // - labels must not start or end with hyphens.
+        // According to RFC1123 (section 2.1):
+        // "...a segment of a host domain name is now allowed
+        // to begin with a digit and could legally be entirely numeric".
         // - Total number of labels is limited to 127
         "((?!-)[a-z0-9-]{0,62}[a-z0-9]\\.){0,126}"
-        // Trailing dot is optional
-        "((?!-)[a-z0-9-]{0,62}[a-z0-9]\\.?)"
+        // Trailing dot is optional.
+        // According to RFC1738 (section 3.1):
+        // "The rightmost domain label will never start with a digit".
+        "((?![0-9-])[a-z0-9-]{0,62}[a-z0-9]\\.?)"
         "$)",
         std::regex_constants::icase);
 
@@ -258,7 +263,8 @@ std::string Arguments::asIpOrFQDN()
 
     std::string err = "Invalid argument: ";
     err += arg;
-    err += ", expected IP address or FQDN";
+    err += ", expected IP address or FQDN. ";
+    err += "Please, enter IPv4-addresses in dotted-decimal format.";
     throw std::invalid_argument(err);
 }
 

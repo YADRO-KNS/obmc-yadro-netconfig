@@ -9,7 +9,7 @@
 
 /**
  * @class Dbus
- * @brief D-Bus warpper to work with Network configuration interfaces.
+ * @brief D-Bus wrapper to work with Network configuration interfaces.
  */
 class Dbus
 {
@@ -19,6 +19,9 @@ class Dbus
 
     // Network service name
     static constexpr const char* networkService = "xyz.openbmc_project.Network";
+    // Syslog service name
+    static constexpr const char* syslogService =
+        "xyz.openbmc_project.Syslog.Config";
 
     // Objects (paths to them)
     static constexpr const char* objectRoot = "/xyz/openbmc_project/network";
@@ -26,6 +29,8 @@ class Dbus
         "/xyz/openbmc_project/network/config";
     static constexpr const char* objectDhcp =
         "/xyz/openbmc_project/network/config/dhcp";
+    static constexpr const char* objectSyslog =
+        "/xyz/openbmc_project/logging/config/remote";
 
     // System Configuration interface, its methods and properties
     static constexpr const char* syscfgInterface =
@@ -105,6 +110,12 @@ class Dbus
     using ManagedObject = std::map<sdbusplus::message::object_path,
                                    std::map<std::string, Properties>>;
 
+    // Remote syslog server interface, its methods and properties
+    static constexpr const char* syslogInterface =
+        "xyz.openbmc_project.Network.Client";
+    static constexpr const char* syslogAddr = "Address";
+    static constexpr const char* syslogPort = "Port";
+
     /** @brief Constructor. */
     Dbus();
 
@@ -121,11 +132,10 @@ class Dbus
      * @return response message
      */
     template <typename... T>
-    auto call(const char* object, const char* interface, const char* name,
-              T&&... args)
+    auto call(const char* service, const char* object, const char* interface,
+              const char* name, T&&... args)
     {
-        auto mcall =
-            bus.new_method_call(Dbus::networkService, object, interface, name);
+        auto mcall = bus.new_method_call(service, object, interface, name);
         mcall.append(std::forward<T>(args)...);
         return bus.call(mcall);
     }
@@ -142,10 +152,12 @@ class Dbus
      * @return property's value
      */
     template <typename T>
-    T get(const char* object, const char* interface, const char* name)
+    T get(const char* service, const char* object, const char* interface,
+          const char* name)
     {
         std::variant<T> value;
-        call(object, propertiesInterface, propertiesGet, interface, name)
+        call(service, object, propertiesInterface, propertiesGet, interface,
+             name)
             .read(value);
         return std::get<T>(value);
     }
@@ -161,11 +173,11 @@ class Dbus
      * @throw std::exception in case of errors
      */
     template <typename T>
-    void set(const char* object, const char* interface, const char* name,
-             const T& value)
+    void set(const char* service, const char* object, const char* interface,
+             const char* name, const T& value)
     {
-        call(object, propertiesInterface, propertiesSet, interface, name,
-             std::variant<T>(value));
+        call(service, object, propertiesInterface, propertiesSet, interface,
+             name, std::variant<T>(value));
     }
 
     /**
@@ -179,8 +191,8 @@ class Dbus
      * @throw std::invalid_arguments if value already exists
      * @throw std::exception in case of errors
      */
-    void append(const char* object, const char* interface, const char* name,
-                const std::vector<std::string>& values);
+    void append(const char* service, const char* object, const char* interface,
+                const char* name, const std::vector<std::string>& values);
 
     /**
      * @brief Remove string value from property array.
@@ -193,8 +205,8 @@ class Dbus
      * @throw std::invalid_arguments if value is not exist
      * @throw std::exception in case of errors
      */
-    void remove(const char* object, const char* interface, const char* name,
-                const std::vector<std::string>& values);
+    void remove(const char* service, const char* object, const char* interface,
+                const char* name, const std::vector<std::string>& values);
 
     /**
      * @struct IpAddress

@@ -260,3 +260,87 @@ TEST(ArgumentsTest, IpOrFQDNNegative)
     ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
     ASSERT_THROW(args.asIpOrFQDN(), std::invalid_argument);
 }
+
+TEST(ArgumentsTest, AddrAndPortPositive)
+{
+    char* testArgs[] = {
+        const_cast<char*>("127.0.0.1"),
+        const_cast<char*>("127.0.0.1:12345"),
+        const_cast<char*>("3001:db8:11a3:9d7:1f34:8a2e:17a0:765d"),
+        const_cast<char*>("[3001:db8:11a3:9d7:1f34:8a2e:17a0:765d]:65534"),
+        const_cast<char*>("3001::765d"),
+        const_cast<char*>("[3001::765d]:65534"),
+        const_cast<char*>("a.com"),
+        const_cast<char*>("a.com:234"),
+        const_cast<char*>("text"),
+        const_cast<char*>("text:56"),
+    };
+
+    const int argsNum = sizeof(testArgs) / sizeof(testArgs[0]);
+
+    Arguments args(argsNum, testArgs);
+
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("127.0.0.1", 514));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("127.0.0.1", 12345));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(),
+              std::make_tuple("3001:db8:11a3:9d7:1f34:8a2e:17a0:765d", 514));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(),
+              std::make_tuple("3001:db8:11a3:9d7:1f34:8a2e:17a0:765d", 65534));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("3001::765d", 514));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("3001::765d", 65534));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("a.com", 514));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("a.com", 234));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("text", 514));
+    args.asText();
+    EXPECT_EQ(args.parseAddrAndPort(), std::make_tuple("text", 56));
+    args.asText();
+}
+
+TEST(ArgumentsTest, AddrAndPortNegative)
+{
+    char* testArgs[] = {
+        const_cast<char*>("127.0.0.1.1"),
+        const_cast<char*>("256.0.0.1"),
+        const_cast<char*>("127.0.0.1:65536"),
+        const_cast<char*>("127.0.0.1:w"),
+        const_cast<char*>("3001:db8:11a3:9d7:1f34:8a2e:17a0:765d:123"),
+        const_cast<char*>("[3001:db8:11a3:9d7:1f34:8a2e:17a0:765d]:-15"),
+        const_cast<char*>("[3001::765d]:db8"),
+        const_cast<char*>("a.1"),
+        const_cast<char*>("a.com:1000000"),
+        const_cast<char*>("[text]:56"),
+    };
+
+    const int argsNum = sizeof(testArgs) / sizeof(testArgs[0]);
+
+    Arguments args(argsNum, testArgs);
+
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+    ASSERT_THROW(args.parseAddrAndPort(), std::invalid_argument);
+    args.asText();
+}

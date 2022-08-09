@@ -38,6 +38,9 @@ enum class IpVer
     v6 = 6
 };
 
+/** @brief Default remote syslog server port */
+static constexpr uint16_t syslogDefPort = 514;
+
 /**
  * @class Arguments
  * @brief Arguments parser.
@@ -185,12 +188,47 @@ class Arguments
      * @brief Get current argument as IP address or hostname.
      *        Argument pointer will be moved to the next entry.
      *
+     * @param[in] param - optional param when parsing 'bmc syslog set' command
+     * args
+     *
      * @throw std::invalid_argument if there are no more arguments to handle
      *                              or argument has invalid format
      *
      * @return IP address in unified format or hostname
      */
-    std::string asIpOrFQDN();
+    std::string
+        asIpOrFQDN(const std::optional<std::string>& param = std::nullopt);
+
+    /**
+     * @brief Parse an argument of the form 'ADDR:PORT' where address can be
+     * IPv4, IPv6, FQDN, PORT is a 16 bit positive integer. The ':PORT' part is
+     * optional. If current argument exists, argument pointer will be moved to
+     * the next entry.
+     *
+     * @return string with the address and port number
+     */
+    std::tuple<std::string, unsigned short> parseAddrAndPort();
+
+    /**
+     * @brief Set address and default port.
+     *
+     * @param[in] str - string with address
+     *
+     * @return string with the address and default port number
+     */
+    std::tuple<std::string, unsigned short>
+        setDefaultPort(const std::string& str);
+
+    /**
+     * @brief Parse port number from string arg
+     *
+     * @param[in] str - string with port number value
+     *
+     * @throw std::invalid_argument if argument has invalid format
+     *
+     * @return port number
+     */
+    unsigned short parsePortFromString(const std::string& str);
 
     /**
      * @brief Check for unsigned numeric format.

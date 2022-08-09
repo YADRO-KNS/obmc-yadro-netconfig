@@ -8,11 +8,12 @@
 /**
  * @brief Execute the configuration command.
  *
+ * @param[in] app  application name
  * @param[in] args command line arguments
  *
  * @throw std::exception in case of errors
  */
-void execute(Arguments& args);
+void execute(const char* app, Arguments& args);
 
 enum class CLIMode {
   normalMode, ///< Normal mode, print the banner and the command name in help
@@ -33,3 +34,11 @@ void help(CLIMode mode, const char *app, Arguments& args);
 /** @brief IEEE 802.1Q VLAN ID limits. */
 static constexpr uint32_t minVlanId = 2;
 static constexpr uint32_t maxVlanId = 4094;
+
+static constexpr const char* netCnfg = "netconfig";
+static constexpr const char* ifcfg = "ifconfig";
+static constexpr const char* sslg = "syslog";
+static constexpr const char* cliIfconfig = "bmc ifconfig";
+static constexpr const char* rootIfconfig = "netconfig ifconfig";
+static constexpr const char* cliSyslog = "bmc syslog";
+static constexpr const char* rootSyslog = "netconfig syslog";

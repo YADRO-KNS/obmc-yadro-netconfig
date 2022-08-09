@@ -50,7 +50,8 @@ static void cmdReset(Dbus& bus, Arguments& args)
     args.expectEnd();
 
     puts("Reset network configuration...");
-    bus.call(Dbus::objectRoot, Dbus::resetInterface, Dbus::resetMethod);
+    bus.call(Dbus::networkService, Dbus::objectRoot, Dbus::resetInterface,
+             Dbus::resetMethod);
     puts(completeMessage);
 }
 
@@ -64,7 +65,8 @@ static void cmdMac(Dbus& bus, Arguments& args)
     const std::string object = Dbus::ethToPath(iface);
 
     printf("Set new MAC address %s...\n", mac);
-    bus.set(object.c_str(), Dbus::macInterface, Dbus::macSet, mac);
+    bus.set(Dbus::networkService, object.c_str(), Dbus::macInterface,
+            Dbus::macSet, mac);
     puts(completeMessage);
 }
 
@@ -75,8 +77,8 @@ static void cmdHostname(Dbus& bus, Arguments& args)
     args.expectEnd();
 
     printf("Set new host name %s...\n", name.c_str());
-    bus.set(Dbus::objectConfig, Dbus::syscfgInterface, Dbus::syscfgHostname,
-            name);
+    bus.set(Dbus::networkService, Dbus::objectConfig, Dbus::syscfgInterface,
+            Dbus::syscfgHostname, name);
     puts(completeMessage);
 }
 
@@ -92,7 +94,8 @@ static void cmdGateway(Dbus& bus, Arguments& args)
     const char* property =
         ver == IpVer::v4 ? Dbus::syscfgDefGw4 : Dbus::syscfgDefGw6;
 
-    bus.set(Dbus::objectConfig, Dbus::syscfgInterface, property, ip);
+    bus.set(Dbus::networkService, Dbus::objectConfig, Dbus::syscfgInterface,
+            property, ip);
 
     puts(completeMessage);
 }
@@ -112,8 +115,8 @@ static void cmdIp(Dbus& bus, Arguments& args)
         const char* ipInterface =
             ipVer == IpVer::v4 ? Dbus::ip4Interface : Dbus::ip6Interface;
 
-        bus.call(object.c_str(), Dbus::ipCreateInterface, Dbus::ipCreateMethod,
-                 ipInterface, ip, mask, "");
+        bus.call(Dbus::networkService, object.c_str(), Dbus::ipCreateInterface,
+                 Dbus::ipCreateMethod, ipInterface, ip, mask, "");
 
         printf("Request for setting %s/%d on %s has been sent\n", ip.c_str(),
                mask, iface);
@@ -126,8 +129,8 @@ static void cmdIp(Dbus& bus, Arguments& args)
         {
             if (it.address == ip)
             {
-                bus.call(it.object.c_str(), Dbus::deleteInterface,
-                         Dbus::deleteMethod);
+                bus.call(Dbus::networkService, it.object.c_str(),
+                         Dbus::deleteInterface, Dbus::deleteMethod);
                 handled = true;
                 break;
             }
@@ -170,7 +173,8 @@ static void cmdDhcp(Dbus& bus, Arguments& args)
     printf("%s DHCP client...\n",
            toggle == Toggle::enable ? "Enable" : "Disable");
 
-    bus.set(object.c_str(), Dbus::ethInterface, Dbus::ethDhcpEnabled, enable);
+    bus.set(Dbus::networkService, object.c_str(), Dbus::ethInterface,
+            Dbus::ethDhcpEnabled, enable);
 
     puts(completeMessage);
 }
@@ -190,14 +194,14 @@ static void cmdDhcpcfg(Dbus& bus, Arguments& args)
     if (strcmp(feature, featureDns) == 0)
     {
         printf("%s DNS over DHCP...\n", enable ? "Enable" : "Disable");
-        bus.set(Dbus::objectDhcp, Dbus::dhcpInterface, Dbus::dhcpDnsEnabled,
-                enable);
+        bus.set(Dbus::networkService, Dbus::objectDhcp, Dbus::dhcpInterface,
+                Dbus::dhcpDnsEnabled, enable);
     }
     else
     {
         printf("%s NTP over DHCP...\n", enable ? "Enable" : "Disable");
-        bus.set(Dbus::objectDhcp, Dbus::dhcpInterface, Dbus::dhcpNtpEnabled,
-                enable);
+        bus.set(Dbus::networkService, Dbus::objectDhcp, Dbus::dhcpInterface,
+                Dbus::dhcpNtpEnabled, enable);
     }
 
     puts(completeMessage);
@@ -222,13 +226,13 @@ static void cmdDns(Dbus& bus, Arguments& args)
     const std::string object = Dbus::ethToPath(iface);
     if (action == Action::add)
     {
-        bus.append(object.c_str(), Dbus::ethInterface, Dbus::ethStNameServers,
-                   servers);
+        bus.append(Dbus::networkService, object.c_str(), Dbus::ethInterface,
+                   Dbus::ethStNameServers, servers);
     }
     else
     {
-        bus.remove(object.c_str(), Dbus::ethInterface, Dbus::ethStNameServers,
-                   servers);
+        bus.remove(Dbus::networkService, object.c_str(), Dbus::ethInterface,
+                   Dbus::ethStNameServers, servers);
     }
 
     puts(completeMessage);
@@ -254,13 +258,13 @@ static void cmdNtp(Dbus& bus, Arguments& args)
 
     if (action == Action::add)
     {
-        bus.append(object.c_str(), Dbus::ethInterface, Dbus::ethNtpServers,
-                   servers);
+        bus.append(Dbus::networkService, object.c_str(), Dbus::ethInterface,
+                   Dbus::ethNtpServers, servers);
     }
     else
     {
-        bus.remove(object.c_str(), Dbus::ethInterface, Dbus::ethNtpServers,
-                   servers);
+        bus.remove(Dbus::networkService, object.c_str(), Dbus::ethInterface,
+                   Dbus::ethNtpServers, servers);
     }
 
     puts(completeMessage);
@@ -293,14 +297,16 @@ static void cmdVlan(Dbus& bus, Arguments& args)
     {
         if (action == Action::add)
         {
-            bus.call(Dbus::objectRoot, Dbus::vlanCreateInterface,
-                    Dbus::vlanCreateMethod, iface, id);
+            bus.call(Dbus::networkService, Dbus::objectRoot,
+                     Dbus::vlanCreateInterface, Dbus::vlanCreateMethod, iface,
+                     id);
         }
         else
         {
             const std::string object =
                 Dbus::ethToPath(iface) + '_' + std::to_string(id);
-            bus.call(object.c_str(), Dbus::deleteInterface, Dbus::deleteMethod);
+            bus.call(Dbus::networkService, object.c_str(),
+                     Dbus::deleteInterface, Dbus::deleteMethod);
         }
     }
     catch(const std::exception& e)
@@ -316,9 +322,59 @@ static void cmdVlan(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
+static void cmdSyslogSet(Dbus& bus, Arguments& args)
+{
+    const auto [addr, port] = args.parseAddrAndPort();
+    if (args.peek() != nullptr)
+    {
+        args.asText();
+        args.expectEnd();
+    }
+
+    printf("Set remote syslog server %s:%u...\n", addr.c_str(), port);
+    bus.set(Dbus::syslogService, Dbus::objectSyslog, Dbus::syslogInterface,
+            Dbus::syslogAddr, addr);
+    bus.set(Dbus::syslogService, Dbus::objectSyslog, Dbus::syslogInterface,
+            Dbus::syslogPort, port);
+    puts(completeMessage);
+}
+
+static void cmdSyslogReset(Dbus& bus, Arguments& args)
+{
+    std::string addr{""};
+    unsigned short port{0};
+    args.expectEnd();
+    bus.set(Dbus::syslogService, Dbus::objectSyslog, Dbus::syslogInterface,
+            Dbus::syslogAddr, addr);
+    bus.set(Dbus::syslogService, Dbus::objectSyslog, Dbus::syslogInterface,
+            Dbus::syslogPort, port);
+    puts(completeMessage);
+}
+
+static void cmdSyslogShow(Dbus& bus, Arguments& args)
+{
+    args.expectEnd();
+    std::string addr =
+        bus.get<std::string>(Dbus::syslogService, Dbus::objectSyslog,
+                             Dbus::syslogInterface, Dbus::syslogAddr);
+    unsigned short port =
+        bus.get<unsigned short>(Dbus::syslogService, Dbus::objectSyslog,
+                                Dbus::syslogInterface, Dbus::syslogPort);
+
+    printf("Remote syslog server: ");
+    if (addr == "" || port == 0)
+    {
+        printf("(none)\n");
+    }
+    else if (addr != "")
+    {
+        printf("%s:%u (tcp)\n", addr.c_str(), port);
+    }
+}
+
 // clang-format off
 /** @brief List of command descriptions. */
-static const Command commands[] = {
+static const Command ifconfigCommands[] = {
     {"show", nullptr, "Show current configuration", cmdShow},
     {"reset", nullptr, "Reset configuration to factory defaults", cmdReset},
     {"mac", "{INTERFACE} MAC", "Set MAC address", cmdMac},
@@ -331,18 +387,52 @@ static const Command commands[] = {
     {"ntp", "{INTERFACE} {add|del} ADDR [ADDR..]", "Add or remove NTP server", cmdNtp},
     {"vlan", "{add|del} {INTERFACE} ID", "Add or remove VLAN", cmdVlan},
 };
+
+static const Command syslogCommands[] = {
+    {"set", "ADDR[:PORT]", "Configure remote syslog server (Address and an optional TCP port (default is 514))", cmdSyslogSet},
+    {"reset", nullptr, "Reset syslog settings. Alias for the syslog set command without arguments.", cmdSyslogReset},
+    {"show", nullptr, "Show the configured remote syslog server", cmdSyslogShow},
+};
 // clang-format on
 
-void execute(Arguments& args)
+static std::tuple<const Command*, unsigned int>
+    getCommandsArray(const char* app)
+{
+    const Command* cmdArr;
+    unsigned int arrSize;
+
+    if (!strcmp(app, cliIfconfig) || !strcmp(app, rootIfconfig))
+    {
+        cmdArr = ifconfigCommands;
+        arrSize = sizeof(ifconfigCommands) / sizeof(Command);
+    }
+    else if (!strcmp(app, cliSyslog) || !strcmp(app, rootSyslog))
+    {
+        cmdArr = syslogCommands;
+        arrSize = sizeof(syslogCommands) / sizeof(Command);
+    }
+    else
+    {
+        std::string err = "Invalid argument: ";
+        err += app;
+        throw std::invalid_argument(err);
+    }
+
+    return std::make_tuple(cmdArr, arrSize);
+}
+
+void execute(const char* app, Arguments& args)
 {
     const char* cmdName = args.asText();
+    std::tuple<const Command*, unsigned short> cmds = getCommandsArray(app);
 
-    for (const auto& cmd : commands)
+    for (const auto* it = std::get<0>(cmds);
+         it != std::get<0>(cmds) + std::get<1>(cmds); ++it)
     {
-        if (strcmp(cmdName, cmd.name) == 0)
+        if (strcmp(cmdName, it->name) == 0)
         {
             Dbus bus;
-            cmd.fn(bus, args);
+            it->fn(bus, args);
             return;
         }
     }
@@ -355,14 +445,16 @@ void execute(Arguments& args)
 void help(CLIMode mode, const char* app, Arguments& args)
 {
     const char* helpForCmd = args.peek();
+    std::tuple<const Command*, unsigned short> cmds = getCommandsArray(app);
     if (helpForCmd)
     {
         const Command* cmdEntry = nullptr;
-        for (const auto& cmd : commands)
+        for (const auto* it = std::get<0>(cmds);
+             it != std::get<0>(cmds) + std::get<1>(cmds); ++it)
         {
-            if (strcmp(helpForCmd, cmd.name) == 0)
+            if (strcmp(helpForCmd, it->name) == 0)
             {
-                cmdEntry = &cmd;
+                cmdEntry = it;
                 break;
             }
         }
@@ -388,13 +480,14 @@ void help(CLIMode mode, const char* app, Arguments& args)
     }
     else
     {
-        for (const auto& cmd : commands)
+        for (const auto* it = std::get<0>(cmds);
+             it != std::get<0>(cmds) + std::get<1>(cmds); ++it)
         {
-            printf("  %-10s %s\n", cmd.name, cmd.help);
-            if (cmd.fmt)
+            printf("  %-10s %s\n", it->name, it->help);
+            if (it->fmt)
             {
-                printf("  %-10s Command format: %s %s\n", "", cmd.name,
-                       cmd.fmt);
+                printf("  %-10s Command format: %s %s\n", "", it->name,
+                       it->fmt);
             }
             printf("\n");
         }

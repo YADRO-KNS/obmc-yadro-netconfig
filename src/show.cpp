@@ -5,7 +5,8 @@
 
 Show::Show(Dbus& bus) : bus(bus)
 {
-    bus.call(Dbus::objectRoot, Dbus::objmgrInterface, Dbus::objmgrGet)
+    bus.call(Dbus::networkService, Dbus::objectRoot, Dbus::objmgrInterface,
+             Dbus::objmgrGet)
         .read(netObjects);
 }
 

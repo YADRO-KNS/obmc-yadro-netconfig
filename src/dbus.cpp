@@ -8,10 +8,12 @@
 Dbus::Dbus() : bus(sdbusplus::bus::new_default())
 {}
 
-void Dbus::append(const char* object, const char* interface, const char* name,
+void Dbus::append(const char* service, const char* object,
+                  const char* interface, const char* name,
                   const std::vector<std::string>& values)
 {
-    auto array = get<std::vector<std::string>>(object, interface, name);
+    auto array =
+        get<std::vector<std::string>>(service, object, interface, name);
     bool needUpdate = false;
 
     for (const auto& value : values)
@@ -29,13 +31,15 @@ void Dbus::append(const char* object, const char* interface, const char* name,
         throw std::invalid_argument("No new values specified");
     }
 
-    set(object, interface, name, array);
+    set(service, object, interface, name, array);
 }
 
-void Dbus::remove(const char* object, const char* interface, const char* name,
+void Dbus::remove(const char* service, const char* object,
+                  const char* interface, const char* name,
                   const std::vector<std::string>& values)
 {
-    auto array = get<std::vector<std::string>>(object, interface, name);
+    auto array =
+        get<std::vector<std::string>>(service, object, interface, name);
     bool needUpdate = false;
 
     for (const auto& value : values)
@@ -53,7 +57,7 @@ void Dbus::remove(const char* object, const char* interface, const char* name,
         throw std::invalid_argument("No values to remove found");
     }
 
-    set(object, interface, name, array);
+    set(service, object, interface, name, array);
 }
 
 std::vector<Dbus::IpAddress> Dbus::getAddresses(const char* ethObject)
@@ -64,7 +68,7 @@ std::vector<Dbus::IpAddress> Dbus::getAddresses(const char* ethObject)
     pathPrefix += "/ip";
 
     Dbus::ManagedObject objects;
-    call(objectRoot, objmgrInterface, objmgrGet).read(objects);
+    call(networkService, objectRoot, objmgrInterface, objmgrGet).read(objects);
 
     for (const auto& it : objects)
     {

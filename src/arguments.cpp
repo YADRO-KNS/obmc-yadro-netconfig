@@ -222,9 +222,17 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
     throw std::invalid_argument(err);
 }
 
-std::string Arguments::asIpOrFQDN()
+std::string Arguments::asIpOrFQDN(const std::optional<std::string>& param)
 {
-    const char* arg = asText();
+    const char* arg;
+    if (!param)
+    {
+        arg = asText();
+    }
+    else
+    {
+        arg = param.value().c_str();
+    }
 
     try
     {
@@ -309,5 +317,75 @@ std::tuple<IpVer, std::string> Arguments::parseIpAddress(const char* arg)
 
     std::string err = "Invalid IP address: ";
     err += arg;
+    throw std::invalid_argument(err);
+}
+
+std::tuple<std::string, unsigned short> Arguments::parseAddrAndPort()
+{
+    std::tuple<std::string, unsigned short> remoteSrv("", 0);
+    const char* arg = peek();
+    if (arg != nullptr)
+    {
+        std::string srv{arg};
+        std::string::size_type delim;
+        size_t colonCnt = std::count(srv.begin(), srv.end(), ':');
+        switch (colonCnt)
+        {
+            case 0: // IPv4 or FQDN without port
+                remoteSrv = setDefaultPort(srv);
+                break;
+            case 1: // IPv4 or FQDN with port (ADDR:PORT)
+                delim = srv.find(":");
+                std::get<0>(remoteSrv) = asIpOrFQDN(srv.substr(0, delim));
+                std::get<1>(remoteSrv) =
+                    parsePortFromString(srv.substr(delim + 1));
+                break;
+            default: // an IPv6 address contains at least two colons.
+                // If the argument is given as IPv6 address with a port,
+                // the address should be taken in '[' and ']', i.e.
+                // [IPv6-ADDR]:PORT
+                if (srv.front() == '[')
+                {
+                    delim = srv.find("]");
+                    std::get<0>(remoteSrv) =
+                        asIpOrFQDN(srv.substr(1, delim - 1));
+                    std::get<1>(remoteSrv) =
+                        parsePortFromString(srv.substr(delim + 2));
+                }
+                else
+                {
+                    remoteSrv = setDefaultPort(srv);
+                }
+                break;
+        }
+    }
+    return remoteSrv;
+}
+
+std::tuple<std::string, unsigned short>
+    Arguments::setDefaultPort(const std::string& str)
+{
+    return std::tuple<std::string, unsigned short>(asIpOrFQDN(str),
+                                                   syslogDefPort);
+}
+
+unsigned short Arguments::parsePortFromString(const std::string& str)
+{
+    try
+    {
+        int prt = stoi(str);
+        if (prt > 0 && prt <= UINT16_MAX)
+        {
+            return prt;
+        }
+    }
+    catch (const std::invalid_argument&)
+    {
+        // pass
+    }
+
+    std::string err = "Invalid port number: ";
+    err += str;
+    err += ", expected an integer in the range 1 - 65535";
     throw std::invalid_argument(err);
 }

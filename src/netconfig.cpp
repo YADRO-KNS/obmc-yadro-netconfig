@@ -32,6 +32,8 @@ struct Command
     const char* help;
     /** @brief Command handler. */
     Handler fn;
+    /** @brief Command extended description. */
+    const char* details = nullptr;
 };
 
 /** @brief Standard message to print after sending request. */
@@ -379,7 +381,10 @@ static const Command ifconfigCommands[] = {
     {"reset", nullptr, "Reset configuration to factory defaults", cmdReset},
     {"mac", "{INTERFACE} MAC", "Set MAC address", cmdMac},
     {"hostname", "NAME", "Set host name", cmdHostname},
-    {"gateway", "IP", "Set default gateway", cmdGateway},
+    {"gateway", "IP", "Set default gateway", cmdGateway,
+     "NOTE: The system doesn't allow unreachable gateways. Please ensure that "
+     "your\ngateway belongs to the network defined by the IP address and the "
+     "netmask."},
     {"ip", "{INTERFACE} {add|del} IP[/MASK]", "Add or remove static IP address (default mask: IPv4/24, IPv6/64)", cmdIp},
     {"dhcp", "{INTERFACE} {enable|disable}", "Enable or disable DHCP client", cmdDhcp},
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
@@ -465,7 +470,10 @@ void help(CLIMode mode, const char* app, Arguments& args)
             throw std::invalid_argument(err);
         }
         puts(cmdEntry->help);
-
+        if (cmdEntry->details)
+        {
+            puts(cmdEntry->details);
+        }
         // Command-specific help should not include the name of the command
         // in CLI mode as in that mode it will be passed in as part of `app`
         // and may differ from the actual command being processed, e.g.

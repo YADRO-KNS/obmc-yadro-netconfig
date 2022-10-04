@@ -42,3 +42,4 @@ static constexpr const char* cliIfconfig = "bmc ifconfig";
 static constexpr const char* rootIfconfig = "netconfig ifconfig";
 static constexpr const char* cliSyslog = "bmc syslog";
 static constexpr const char* rootSyslog = "netconfig syslog";
+static constexpr const char* cliDatetime = "bmc datetime ntpconfig";

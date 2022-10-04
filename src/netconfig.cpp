@@ -82,7 +82,7 @@ static void cmdHostname(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
-/** @brief Set default gateway: `getway IP` */
+/** @brief Set default gateway: `gateway IP` */
 static void cmdGateway(Dbus& bus, Arguments& args)
 {
     const auto [ver, ip] = args.asIpAddress();

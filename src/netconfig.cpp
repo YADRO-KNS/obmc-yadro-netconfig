@@ -322,6 +322,7 @@ static void cmdVlan(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
+/** @brief Configure remote syslog server: `set ADDR[:PORT]` */
 static void cmdSyslogSet(Dbus& bus, Arguments& args)
 {
     const auto [addr, port] = args.parseAddrAndPort();
@@ -339,6 +340,7 @@ static void cmdSyslogSet(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
+/** @brief Reset syslog settings: `reset` */
 static void cmdSyslogReset(Dbus& bus, Arguments& args)
 {
     std::string addr{""};
@@ -351,6 +353,7 @@ static void cmdSyslogReset(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
+/** @brief Show the configured remote syslog server: `show` */
 static void cmdSyslogShow(Dbus& bus, Arguments& args)
 {
     args.expectEnd();

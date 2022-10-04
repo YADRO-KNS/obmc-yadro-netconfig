@@ -401,7 +401,8 @@ static std::tuple<const Command*, unsigned int>
     const Command* cmdArr;
     unsigned int arrSize;
 
-    if (!strcmp(app, cliIfconfig) || !strcmp(app, rootIfconfig))
+    if (!strcmp(app, cliIfconfig) || !strcmp(app, cliDatetime) ||
+        !strcmp(app, rootIfconfig))
     {
         cmdArr = ifconfigCommands;
         arrSize = sizeof(ifconfigCommands) / sizeof(Command);

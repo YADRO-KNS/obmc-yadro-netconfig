@@ -4,6 +4,8 @@
 #include "netconfig.hpp"
 #include "version.hpp"
 
+#include <sdbusplus/exception.hpp>
+
 #include <cstring>
 
 bool isHelp(const char* str)
@@ -115,6 +117,19 @@ int main(int argc, char* argv[])
         {
             execute(app_str.c_str(), args);
         }
+    }
+    catch (sdbusplus::exception::SdBusError& ex)
+    {
+        std::string what = ex.what();
+        if (what.find("UnreachableGW") != std::string::npos)
+            fprintf(stderr, "Unreachable gateway specified\n");
+        else if (what.find("NotAllowed") != std::string::npos)
+            fprintf(stderr, "The operation is not allowed because no static "
+                            "addresses found\n");
+        else
+            fprintf(stderr, "%s\n", ex.what());
+
+        return EXIT_FAILURE;
     }
     catch (std::exception& ex)
     {

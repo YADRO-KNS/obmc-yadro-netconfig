@@ -11,6 +11,6 @@ test(
     dependencies: [
       dependency('gtest', main: true, disabler: true, required: build_tests),
     ],
-    include_directories: '../src',
+    include_directories: ['..', '../src'],
   )
 )

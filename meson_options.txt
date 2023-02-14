@@ -7,3 +7,7 @@ option('default-netiface', type: 'string',
 option('tests',
        type: 'feature',
        description: 'Build tests')
+
+option('switchable-eth1-port',
+       type: 'boolean', value: false,
+       description: 'Add for eth1 port switch feauture')

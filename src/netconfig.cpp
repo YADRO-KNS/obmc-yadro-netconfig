@@ -322,6 +322,20 @@ static void cmdVlan(Dbus& bus, Arguments& args)
     puts(completeMessage);
 }
 
+/** @brief Set source for eth1 shared interface(BMC/Host*/
+#ifdef SWITCHABLE_ETH1_PORT
+static void cmdSharedIfaceSrc(Dbus& bus, Arguments& args)
+{
+    bool arg = args.asEthSrc();
+    args.expectEnd();
+
+    printf("Set shared port eth1 source as %s...\n", arg ? "BMC" : "Host");
+    bus.set(Dbus::settingsService, Dbus::objectSharedPort,
+            Dbus::sharedPortInterface, Dbus::sharedPortSource, arg);
+    puts(completeMessage);
+}
+#endif // SWITCHABLE_ETH1_PORT
+
 /** @brief Configure remote syslog server: `set ADDR[:PORT]` */
 static void cmdSyslogSet(Dbus& bus, Arguments& args)
 {
@@ -388,6 +402,9 @@ static const Command ifconfigCommands[] = {
     {"dhcpcfg", "{enable|disable} {dns|ntp}", "Enable or disable DHCP features", cmdDhcpcfg},
     {"dns", "{INTERFACE} {add|del} IP [IP..]", "Add or remove DNS server", cmdDns},
     {"ntp", "{INTERFACE} {add|del} ADDR [ADDR..]", "Add or remove NTP server", cmdNtp},
+#ifdef SWITCHABLE_ETH1_PORT
+    {"shport", "{BMC|Host}", "Set source for eth1 shared interface(BMC/Host)", cmdSharedIfaceSrc},
+#endif // SWITCHABLE_ETH1_PORT
     {"vlan", "{add|del} {INTERFACE} ID", "Add or remove VLAN", cmdVlan},
 };
 

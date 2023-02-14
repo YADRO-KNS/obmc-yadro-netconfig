@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "config.hpp"
+
 #include <optional>
 #include <string>
 #include <tuple>
@@ -198,6 +200,21 @@ class Arguments
      */
     std::string
         asIpOrFQDN(const std::optional<std::string>& param = std::nullopt);
+
+    /**
+     * @brief Get current argument as a shared ethernet port source
+     *
+     * @param[in] param - param when parsing 'bmc ifconfig shport' command
+     * args
+     *
+     * @throw std::invalid_argument if there are no more arguments to handle
+     *                              or argument has invalid format
+     *
+     * @return bool value true=BMC, false=Host
+     */
+#ifdef SWITCHABLE_ETH1_PORT
+    bool asEthSrc(const std::optional<std::string>& param = std::nullopt);
+#endif // SWITCHABLE_ETH1_PORT
 
     /**
      * @brief Parse an argument of the form 'ADDR:PORT' where address can be

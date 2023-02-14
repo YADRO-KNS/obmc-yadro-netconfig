@@ -222,6 +222,17 @@ std::tuple<IpVer, std::string, uint8_t> Arguments::asIpAddrMask()
     throw std::invalid_argument(err);
 }
 
+#ifdef SWITCHABLE_ETH1_PORT
+bool Arguments::asEthSrc(const std::optional<std::string>& param)
+{
+    const char* BMC = "BMC";
+    const char* Host = "Host";
+
+    const char* arg = asOneOf({BMC, Host});
+    return strcmp(arg, BMC) == 0 ? true : false;
+}
+#endif // SWITCHABLE_ETH1_PORT
+
 std::string Arguments::asIpOrFQDN(const std::optional<std::string>& param)
 {
     const char* arg;

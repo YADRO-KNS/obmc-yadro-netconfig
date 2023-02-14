@@ -19,6 +19,9 @@ class Dbus
 
     // Network service name
     static constexpr const char* networkService = "xyz.openbmc_project.Network";
+    // Settings service name
+    static constexpr const char* settingsService =
+        "xyz.openbmc_project.Settings";
     // Syslog service name
     static constexpr const char* syslogService =
         "xyz.openbmc_project.Syslog.Config";
@@ -31,6 +34,10 @@ class Dbus
         "/xyz/openbmc_project/network/config/dhcp";
     static constexpr const char* objectSyslog =
         "/xyz/openbmc_project/logging/config/remote";
+#ifdef SWITCHABLE_ETH1_PORT
+    static constexpr const char* objectSharedPort =
+        "/xyz/openbmc_project/network/shared_port";
+#endif // SWITCHABLE_ETH1_PORT
 
     // System Configuration interface, its methods and properties
     static constexpr const char* syscfgInterface =
@@ -53,6 +60,11 @@ class Dbus
     // Ethernet interface, its methods and properties
     static constexpr const char* ethInterface =
         "xyz.openbmc_project.Network.EthernetInterface";
+#ifdef SWITCHABLE_ETH1_PORT
+    static constexpr const char* sharedPortInterface =
+        "xyz.openbmc_project.Network.SharedPort";
+    static constexpr const char* sharedPortSource = "Source";
+#endif // SWITCHABLE_ETH1_PORT
     static constexpr const char* ethName = "InterfaceName";
     static constexpr const char* ethDhcpEnabled = "DHCPEnabled";
     static constexpr const char* ethNtpServers = "NTPServers";
